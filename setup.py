@@ -26,9 +26,9 @@ def read(*names, **kwargs):
 setup(
     name='mop',
     use_scm_version={
-        'local_scheme': 'dirty-tag',
-        'write_to': 'src/mop/_version.py',
-        'fallback_version': '0.0.1',
+        "write_to": "src/mop/__init__.py",
+        "write_to_template": '__version__ = "{version}"',
+        "tag_regex": r"^(?P<prefix>v)?(?P<version>[^\+]+)(?P<suffix>.*)?$",
     },
     license='MIT',
     description='A Python library used to compile Azure resource compliance information',
@@ -37,7 +37,7 @@ setup(
         re.sub(':[a-z]+:`~?(.*?)`', r'``\1``', read('CHANGELOG.rst'))
     ),
     author='Robert Fischer',
-    author_email='robert@oakleyrain.com',
+    author_email='robert@recalcitrant.me',
     url='https://github.com/robertfischer3/python-mop',
     packages=find_packages('src'),
     package_dir={'': 'src'},
