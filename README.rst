@@ -21,7 +21,7 @@ Overview
 
 .. |travis| image:: https://api.travis-ci.org/robertfischer3/python-mop.svg?branch=master
     :alt: Travis-CI Build Status
-    :target: https://travis-ci.org/robertfischer3/python-mop
+    :target: https://travis-ci.com/robertfischer3/python-mop.svg?token=GfKWzWQRa9YAeNYM2ptG&branch=master
 
 .. |codeclimate| image:: https://codeclimate.com/github/robertfischer3/python-mop/badges/gpa.svg
    :target: https://codeclimate.com/github/robertfischer3/python-mop
