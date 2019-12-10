@@ -1,11 +1,35 @@
+import inspect
 from dotenv import load_dotenv
 from msrestazure.azure_active_directory import AADTokenCredentials, ServicePrincipalCredentials
 import logging
 import configparser
 import os
 import adal
+import requests
+from contextlib import contextmanager
 from adal import AuthenticationContext
 
+@contextmanager
+def request_authenticated_session():
+    """
+    Context manager for Azure API calls
+    :return: requests.session
+    """
+    try:
+
+        token_response = AzureSDKAuthentication().authenticate()
+        session = requests.session()
+
+        yield session.headers.update({'Authorization': "Bearer " + token_response['accessToken']})
+
+    except:
+        func = inspect.currentframe().f_back.f_code
+        logging.critical("Error creating authenticated session in {} contained in {}", func.co_name,
+        func.co_filename,)
+
+    finally:
+        if session:
+            session.close()
 
 class Connections:
     """
