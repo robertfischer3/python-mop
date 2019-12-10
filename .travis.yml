@@ -1,0 +1,50 @@
+language: python
+python: 3.7
+dist: xenial
+cache: false
+env:
+  global:
+    - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
+    - SEGFAULT_SIGNALS=all
+matrix:
+  include:
+    - env:
+        - TOXENV=py37
+      python: '3.7'
+      stage: tox
+    - stage: test
+      python: '3.7'
+      install:
+          - pipenv install --dev --ignore-pipfile --deploy
+      before_script: # code coverage tool
+          - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+          - chmod +x ./cc-test-reporter
+          - ./cc-test-reporter before-build
+      script: pytest --cov-report xml --cov-report term
+      after_script:
+          - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
+
+stages:
+  - test
+  - tox
+before_install:
+  - python --version
+  - uname -a
+  - lsb_release -a || true
+install:
+  - pip install tox-travis
+  - python -mpip install --progress-bar=off tox -rci/requirements.txt
+  - virtualenv --version
+  - easy_install --version
+  - pip --version
+  - tox --version
+
+script:
+  - tox -v
+after_failure:
+  - more .tox/log/* | cat
+  - more .tox/*/log/* | cat
+notifications:
+  email:
+    on_success: never
+    on_failure: always
