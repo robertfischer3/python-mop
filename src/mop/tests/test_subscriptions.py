@@ -13,7 +13,10 @@ class TestResourcesSubscriptions(unittest.TestCase):
         with change_dir('..'):
             print(os.getcwd())
             print(TESTVARIABLES)
-            self.conifig = ConfigParser.read()
+            with change_dir('../../..'):
+
+                config = ConfigParser()
+                config.read(TESTVARIABLES)
 
     def test_listsubscriptions(self):
 
