@@ -19,13 +19,12 @@ def request_authenticated_session():
 
         token_response = AzureSDKAuthentication().authenticate()
         session = requests.session()
-
-        yield session.headers.update({'Authorization': "Bearer " + token_response['accessToken']})
-
+        session.headers.update({'Authorization': "Bearer " + token_response['accessToken']})
+        yield session
     except:
         func = inspect.currentframe().f_back.f_code
-        logging.critical("Error creating authenticated session in {} contained in {}", func.co_name,
-        func.co_filename,)
+        logging.critical("Error creating authenticated session in {} contained in {}".format(func.co_name,
+        func.co_filename,))
 
     finally:
         if session:

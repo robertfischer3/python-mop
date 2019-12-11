@@ -7,22 +7,6 @@ from azure.mgmt.policyinsights.models import QueryOptions
 from mop.azure.connections import AzureSDKAuthentication, request_authenticated_session
 from azure.mgmt.policyinsights.models import QueryFailureException
 
-class ReguestSession:
-    """
-    RequestSession is context manager that wraps the API calls with authentication, and closes the session
-    when complete
-    """
-    def __init__(self):
-        self.token_response = AzureSDKAuthentication().authenticate()
-        self.session = requests.session()
-
-    def __enter__(self):
-        self.session.headers.update({'Authorization': "Bearer " + self.token_response['accessToken']})
-        return self.session
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.session.close()
-
 
 class ScourPolicyStatesOperations:
 
@@ -41,7 +25,7 @@ class ScourPolicyStatesOperations:
         api_endpoint = os.environ['PolicyStatesSummarizeForPolicyDefinition']
         api_endpoint = api_endpoint.format(subscriptionId=subscription,
                                            policyDefinitionName='1f3afdf9-d0c9-4c3d-847f-89da613e70a8')
-        with ReguestSession() as req:
+        with request_authenticated_session() as req:
             policy_def_builtin = req.post(api_endpoint).json()
 
         return policy_def_builtin
