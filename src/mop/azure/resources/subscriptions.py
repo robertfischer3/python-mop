@@ -6,13 +6,31 @@ from azure.mgmt.resource.policy.models import PolicyAssignment
 
 # TODO change refernce to latest
 from azure.mgmt.resource.policy.v2018_03_01.models.error_response_py3 import ErrorResponseException
+from dotenv import load_dotenv
+import os
 
-class AzureSubscriptions:
+from mop.azure.connections import request_authenticated_session
+
+
+class Subscriptions:
 
     def __init__(self, credentials):
+        load_dotenv()
         self.credentials = credentials
 
-    def subscription_list(self):
+
+    def list_subscriptions_displaynames_id(self):
+        tenant_id = os.environ['TENANT']
+        with request_authenticated_session() as req:
+            endpoint = 'https://management.azure.com/subscriptions/?api-version=2015-01-01'
+
+        headers = {"Authorization": 'Bearer ' + access_token}
+        json_output = requests.get(endpoint, headers=headers).json()
+        for sub in json_output["value"]:
+            print(sub["displayName"] + ': ' + sub["subscriptionId"])
+
+
+    def subscription_list_displayname_id(self):
         '''
         Returns a list of subscriptions available to the credential
         :rtype: object
@@ -36,8 +54,8 @@ class AzureSubscriptions:
         return sub_info
 
     @staticmethod
-    def limited_subscription_columns():
-        cols = ['subscription_id', 'tenant_id', 'subscription_display_name', 'management_grp']
+    def limited_subscription_columns( cols = ['subscription_id', 'tenant_id', 'subscription_display_name', 'management_grp']):
+        cols = cols
         return cols
 
     def list_management_grp_subcriptions(self, management_grp):
@@ -58,7 +76,7 @@ class AzureSubscriptions:
                                  for
                                  subscriptions in mngrp_subscriptions if
                                  '/providers/Microsoft.Management/managementGroups' not in subscriptions.type]
-        df = pd.DataFrame(data=subscriptions_limited, columns=AzureSubscriptions.limited_subscription_columns())
+        df = pd.DataFrame(data=subscriptions_limited, columns=self.limited_subscription_columns())
         df.set_index('subscription_id', inplace=True)
 
         return df

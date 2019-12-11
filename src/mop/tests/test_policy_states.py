@@ -2,27 +2,7 @@ import unittest
 from configparser import ConfigParser
 from dotenv import load_dotenv
 from mop.azure.operations.policy_states import ScourPolicyStatesOperations
-
-TESTVARIABLES = 'testvariables.ini'
-
-class TestConfigParser(unittest.TestCase):
-
-    def test_create_config_file_sections(self):
-        config = ConfigParser()
-        config['DEFAULT'] = {'subscription': '1c1ec02c-560c-4f3f-a8f1-4b29640fdfc6'}
-        config['AZURESDK'] = {
-            'PolicyStatesSummarizeForPolicyDefinition':'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01',
-            'PolicyStatesSummarizeForSubscription':'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01',
-            'PolicyStatesSummarizeForSubscriptionFiltered':'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01&$filter={filter}',
-            '':'',
-        }
-        with open(TESTVARIABLES, 'w') as configfile:
-            config.write(configfile)
-
-    def test_read_testvariables_ini(self):
-        config = ConfigParser()
-        print(config.read(TESTVARIABLES))
-        print(config['DEFAULT']['subscription'])
+from mop.azure.utils.manage_api import TESTVARIABLES
 
 
 class TestOperationsPolicyStates(unittest.TestCase):
