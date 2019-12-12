@@ -15,6 +15,7 @@ def request_authenticated_session():
     Context manager for Azure API calls
     :return: requests.session
     """
+    session = None
     try:
 
         token_response = AzureSDKAuthentication().authenticate()

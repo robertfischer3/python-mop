@@ -1,4 +1,5 @@
 import os
+from configparser import ConfigParser
 
 import requests
 from azure.mgmt.policyinsights.policy_insights_client import PolicyInsightsClient
@@ -7,11 +8,16 @@ from azure.mgmt.policyinsights.models import QueryOptions
 from mop.azure.connections import AzureSDKAuthentication, request_authenticated_session
 from azure.mgmt.policyinsights.models import QueryFailureException
 
+from mop.azure.utils.manage_api import CONFVARIABLES, change_dir, OPERATIONSPATH
+
 
 class ScourPolicyStatesOperations:
 
     def __init__(self):
         load_dotenv()
+        with change_dir(OPERATIONSPATH):
+            config = ConfigParser()
+            config.read(CONFVARIABLES)
 
     def list_operations(self, subscription):
         api_endpoint = os.environ['PolicyDefinitionsListBuiltin']
@@ -36,12 +42,13 @@ class ScourPolicyStatesOperations:
         :param subscription:
         :return:
         '''
-        api_endpoint = os.environ['PolicyStatesSummarizeForSubscription']
+        api_endpoint = self.config['DEFAULT']['policystatessummarizeforsubscription']
         api_endpoint = api_endpoint.format(subscriptionId=subscription)
         with request_authenticated_session() as req:
             policy_states_summary_subscription = req.post(api_endpoint).json
 
         return policy_states_summary_subscription
+
 
     def policy_states_summarize_for_subscription_compliant(self, subscriptionId, is_compliant='true'):
         '''
@@ -53,10 +60,10 @@ class ScourPolicyStatesOperations:
 
         filter_condition = "IsCompliant eq {}".format(is_compliant)
 
-        api_endpoint = os.environ['PolicyStatesSummarizeForSubscriptionFiltered']
+        api_endpoint = self.config['DEFAULT']['PolicyStatesSummarizeForSubscriptionFiltered']
         api_endpoint = api_endpoint.format(subscriptionId=subscriptionId, filter=filter_condition)
 
-        with ReguestSession() as req:
+        with request_authenticated_session() as req:
             policy_states_summary_subscription = req.post(api_endpoint).json()
 
         return policy_states_summary_subscription

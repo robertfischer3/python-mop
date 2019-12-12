@@ -2,9 +2,12 @@ from configparser import ConfigParser
 from contextlib import contextmanager
 from dotenv import load_dotenv
 import os
+from mop.azure.utils.atomic_writes import atomic_write
 
 CONFVARIABLES = 'app.config.ini'
+OPERATIONSPATH = '../../../..'
 TESTVARIABLES = 'test.app.config.ini'
+TESTINGPATH='../../..'
 
 @contextmanager
 def change_dir(destination):
@@ -23,17 +26,19 @@ def create_baseline_configuration(subscription_id, tentant_id, generate_test=Tru
     """
 
     config = ConfigParser()
-    config['DEFAULT'] = {'subscription_id': subscription_id, 'tenant_id': tentant_id}
+    config['DEFAULT'] = {'subscription_id': os.environ['SUB'], 'management_grp_id':os.environ['MANGRP'], 'tenant_id': os.environ['TENANT']}
+    config['LOGGING'] = {'level':'DEBUG'}
     config['AZURESDK'] = {
         'PolicyStatesSummarizeForPolicyDefinition': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01',
         'PolicyStatesSummarizeForSubscription': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01',
         'PolicyStatesSummarizeForSubscriptionFiltered': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01&$filter={filter}',
         'Subscriptions': 'https://management.azure.com/subscriptions?api-version=2019-06-01',
-    }
-    with change_dir('../..'):
-        with open(CONFVARIABLES, 'w') as configfile:
-            config.write(configfile)
 
-        if generate_test:
-            with open(TESTVARIABLES, 'w') as testconfigfile:
-                config.write(testconfigfile)
+    }
+
+    with atomic_write(CONFVARIABLES, 'w') as configfile:
+        config.write(configfile)
+
+    if generate_test:
+        with atomic_write(TESTVARIABLES, 'w') as testconfigfile:
+            config.write(testconfigfile)
