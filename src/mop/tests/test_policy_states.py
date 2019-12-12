@@ -42,14 +42,41 @@ class TestOperationsPolicyStates(unittest.TestCase):
         Testing the policy_states_summarize_for_subscription methods on the class ScourPolicyStatesOperations
         :return:
         """
-        subscription = self.config['AZURESDK']['subscription_id']
+        subscription = self.config['DEFAULT']['subscription_id']
         scour_policy = ScourPolicyStatesOperations()
         execute = scour_policy.policy_states_summarize_for_subscription(subscription)
         # Execute returns a method the can be executed anywhere more than once
         result = execute()
 
-        values = result['value']
-        obj = json.loads(values)
+        summarize_results = result['value']
+        for summary in summarize_results:
+            policyAssignments = summary['policyAssignments']
+            for policy_assignment in policyAssignments:
+                policyAssignmentId = policy_assignment['policyAssignmentId']
+                policySetDefinitionId = policy_assignment['policySetDefinitionId']
+
+                self.assertIsNotNone(policyAssignmentId)
+                self.assertIsNotNone(policySetDefinitionId)
+
+                complianceState = policy_assignment['results']['resourceDetails'][0]
+                com_state = complianceState['complianceState']
+                com_state_cnt = complianceState['count']
+
+                self.assertIsNotNone(com_state)
+                self.assertEqual(type(com_state_cnt), type(1))
+
+
+                non_complianceState = policy_assignment['results']['resourceDetails'][1]
+                non_comp_state =  non_complianceState['complianceState']
+                non_comp_state_cnt = non_complianceState['count']
+
+                self.assertIsNotNone(non_comp_state)
+                self.assertEqual(type(non_comp_state_cnt), type(1))
+
+                break
+
+
+
 
     def test_aggregation(self):
 

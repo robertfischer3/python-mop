@@ -16,8 +16,8 @@ class ScourPolicyStatesOperations:
     def __init__(self):
         load_dotenv()
         with change_dir(OPERATIONSPATH):
-            config = ConfigParser()
-            config.read(CONFVARIABLES)
+            self.config = ConfigParser()
+            self.config.read(CONFVARIABLES)
 
     def list_operations(self, subscription):
         api_endpoint = os.environ['PolicyDefinitionsListBuiltin']
@@ -42,7 +42,7 @@ class ScourPolicyStatesOperations:
         :param subscription:
         :return:
         '''
-        api_endpoint = self.config['DEFAULT']['policystatessummarizeforsubscription']
+        api_endpoint = self.config['AZURESDK']['policystatessummarizeforsubscription']
         api_endpoint = api_endpoint.format(subscriptionId=subscription)
         with request_authenticated_session() as req:
             policy_states_summary_subscription = req.post(api_endpoint).json
