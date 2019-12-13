@@ -80,7 +80,9 @@ setup(
         "python-dotenv",
         "docutils",
         "azure",
-        "pandas"
+        "pandas",
+        "pyodbc",
+        "sqlalchemy"
     ],
     extras_require={
         # eg:

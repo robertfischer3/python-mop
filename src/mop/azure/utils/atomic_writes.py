@@ -33,7 +33,7 @@ def atomic_write(file, mode="w", as_file=True, **kwargs):
     # If the write fails, then restore the original configuration file
     if os.path.isfile(file):
         save_path = file
-        tmp = file +'{}.old'.format(str(uuid.uuid4().hex)[:12])
+        tmp = file +'.{}.old'.format(str(uuid.uuid4().hex)[:12])
         os.rename(file, tmp)
 
     try:
