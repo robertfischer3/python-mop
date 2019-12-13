@@ -1,4 +1,4 @@
-.. image:: https://publicdomainvectors.org/photos/secchio-e-spugna-archite-01.png
+.. image:: mop.png
     :width: 150px
     :align: left
     :height: 150px
