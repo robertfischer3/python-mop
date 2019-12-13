@@ -23,7 +23,7 @@ The Mop Project (alpha)
     :target: https://readthedocs.org/projects/python-mop
     :alt: Documentation Status
 
-.. |travis| image:: https://api.travis-ci.org/robertfischer3/python-mop.svg?branch=master
+.. |travis| image:: https://travis-ci.com/robertfischer3/python-mop.svg?token=GfKWzWQRa9YAeNYM2ptG&branch=master
     :alt: Travis-CI Build Status
     :target: https://travis-ci.com/robertfischer3/python-mop.svg?token=GfKWzWQRa9YAeNYM2ptG&branch=master
 
