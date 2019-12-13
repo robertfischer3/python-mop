@@ -68,7 +68,7 @@ class ScourPolicyStatesOperations:
 
         filter_condition = "IsCompliant eq {}".format(is_compliant)
 
-        api_endpoint = self.config['DEFAULT']['PolicyStatesSummarizeForSubscriptionFiltered']
+        api_endpoint = self.config['AZURESDK']['PolicyStatesSummarizeForSubscriptionFiltered']
         api_endpoint = api_endpoint.format(subscriptionId=subscriptionId, filter=filter_condition)
 
         with request_authenticated_session() as req:

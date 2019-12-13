@@ -1,6 +1,5 @@
 from configparser import ConfigParser
 from contextlib import contextmanager
-from dotenv import load_dotenv
 import os
 from mop.azure.utils.atomic_writes import atomic_write
 

@@ -7,6 +7,8 @@ verify_ssl = true
 
 [packages]
 mop = {editable = true,path = "."}
+sqlalchemy = "*"
+pyodbc = "*"
 
 [requires]
 python_version = "3.7"
