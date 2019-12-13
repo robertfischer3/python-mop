@@ -34,10 +34,7 @@ class PolicyInsights:
 
         return query_results.value
 
-    def policy_states_summarize_for_subscription_api(self):
-        pass
-
-    def policy_insights_management_grp_query(self, management_group_name, policy_states='latest'):
+    def policy_insights_management_grp_query(self, management_group_name, policy_states='latest', query_options=None):
         '''
         Retrieve policy insights for a particular management group. Returns policy insights with policy states
         :param policy_states:
@@ -50,7 +47,7 @@ class PolicyInsights:
 
         query_results = states.list_query_results_for_management_group(policy_states_resource=policy_states,
                                                                        management_group_name=management_group_name,
-                                                                       query_options=None,
+                                                                       query_options=query_options,
                                                                        custom_headers=None, raw=False)
         return query_results.value
 

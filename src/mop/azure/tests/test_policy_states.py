@@ -8,14 +8,14 @@ import json
 from mop.azure.analysis.policy_analysis import EvaluatePolicies
 from mop.azure.connections import Connections
 from mop.azure.operations.policy_states import ScourPolicyStatesOperations
-from mop.azure.utils.manage_api import TESTVARIABLES, change_dir, TESTINGPATH
+from mop.azure.utils.manage_api import TESTVARIABLES, change_dir, OPERATIONSPATH
 
 
 class TestOperationsPolicyStates(unittest.TestCase):
 
     def setUp(self) -> None:
         load_dotenv()
-        with change_dir(TESTINGPATH):
+        with change_dir(OPERATIONSPATH):
             self.config = ConfigParser()
             self.config.read(TESTVARIABLES)
 
@@ -93,26 +93,24 @@ class TestOperationsPolicyStates(unittest.TestCase):
 
         parquet_file = 'TestingCorrelation.parquet'
         xlsx_file = 'TestingCorrelation.xlsx'
-        if os.path.isfile(parquet_file):
-            os.remove(parquet_file)
+        with change_dir(OPERATIONSPATH):
+            if os.path.isfile(parquet_file):
+                os.remove(parquet_file)
 
         subscription = os.environ['SUB']
         management_grp = os.environ['MANGRP']
 
         credentials = Connections().get_authenticated_client()
-        df = EvaluateAzure(credentials).correlate_management_grp_data(management_grp=management_grp,
+        df = EvaluatePolicies(credentials).correlate_management_grp_data(management_grp=management_grp,
                                                                       subscription=subscription)
 
-        pared_df = df.drop(
-            ['policy_assignment_id', 'policy_definition_id', 'timestamp', 'policy_set_definition_id', 'serialize'],
-            axis=1)
 
-        pared_df.to_excel(xlsx_file)
+        df.to_excel(xlsx_file)
 
         if os.path.isfile(parquet_file):
             os.rename(parquet_file)
 
-        pared_df.to_parquet(parquet_file, engine='pyarrow', index=True)
+        df.to_parquet(parquet_file, engine='pyarrow', index=True)
 
     def test_parquet_filter(self):
         parquet_file = 'TestingCorrelation.parquet'

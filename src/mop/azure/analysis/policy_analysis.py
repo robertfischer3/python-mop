@@ -13,7 +13,7 @@ import os
 import adal
 import requests
 from configparser import ConfigParser
-from mop.azure.utils.manage_api import CONFVARIABLES
+from mop.azure.utils.manage_api import CONFVARIABLES, OPERATIONSPATH
 from mop.azure.utils.manage_api import change_dir
 
 
@@ -25,8 +25,10 @@ class EvaluatePolicies:
         self.credentials = credentials
         self.subscriptions = None
         self.policy_insights = None
-        with change_dir('..'):
-            self.conifig = ConfigParser.read(CONFVARIABLES)
+
+        with change_dir(OPERATIONSPATH):
+            self.config = ConfigParser()
+            self.config.read(CONFVARIABLES)
 
     def capture_subscriptions(self, management_grp, save_file=False, filename=""):
         '''
@@ -66,7 +68,7 @@ class EvaluatePolicies:
         :param management_grp:
         :return: pandas dataframe
         '''
-        subscriptions = AzureSubscriptions(self.credentials).list_management_grp_subcriptions(
+        subscriptions = Subscriptions(self.credentials).list_management_grp_subcriptions(
             management_grp=management_grp)
         aggregate_df = None
 
@@ -101,7 +103,7 @@ class EvaluatePolicies:
                                                               management_grp=management_grp,
                                                               subscription_id_param=subscription)
 
-        subscription_info = AzureSubscriptions(self.credentials).list_management_grp_subcriptions(
+        subscription_info = Subscriptions(self.credentials).list_management_grp_subcriptions(
             management_grp=management_grp)
 
         tmp_merge_step1 = pd.merge(df_management_grp_insights, policy_definitions, on='policy_definition_name', how='left')
@@ -111,5 +113,4 @@ class EvaluatePolicies:
         df_management_grp_results = tmp_merge_step2
 
         return df_management_grp_results
-
 

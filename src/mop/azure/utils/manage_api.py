@@ -33,7 +33,10 @@ def create_baseline_configuration(subscription_id, tentant_id, generate_test=Tru
         'PolicyStatesSummarizeForSubscription': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01',
         'PolicyStatesSummarizeForSubscriptionFiltered': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01&$filter={filter}',
         'Subscriptions': 'https://management.azure.com/subscriptions?api-version=2019-06-01',
-
+        'PolicyStatesFilterandmultiplegroups':'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/queryResults?api-version=2018-04-04&$top=10&$orderby=NumNonCompliantResources desc&$filter=IsCompliant eq false&$apply=groupby((PolicyAssignmentId, PolicySetDefinitionId, PolicyDefinitionId, PolicyDefinitionReferenceId, ResourceId))/groupby((PolicyAssignmentId, PolicySetDefinitionId, PolicyDefinitionId, PolicyDefinitionReferenceId), aggregate($count as NumNonCompliantResources))',
+        'PolicyStatesFilterandmultiplegroupsTrue':'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/queryResults?api-version=2018-04-04&$top=10&$orderby=NumNonCompliantResources desc&$filter=IsCompliant eq true&$apply=groupby((PolicyAssignmentId, PolicySetDefinitionId, PolicyDefinitionId, PolicyDefinitionReferenceId, ResourceId))/groupby((PolicyAssignmentId, PolicySetDefinitionId, PolicyDefinitionId, PolicyDefinitionReferenceId), aggregate($count as NumNonCompliantResources))',
+        'ListQueryResultsForManagementGroup':'https://management.azure.com/providers/Microsoft.Management/managementGroups/{managementGroupName}/providers/Microsoft.PolicyInsights/policyStates/{policyStatesResource}/queryResults?api-version=2018-04-04',
+        'PolicyInsightsOperationsList':'PolicyInsightsOperationsList=https://management.azure.com/providers/Microsoft.PolicyInsights/operations?api-version=2018-04-04'
     }
 
     with atomic_write(CONFVARIABLES, 'w') as configfile:

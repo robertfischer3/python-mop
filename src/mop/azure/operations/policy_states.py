@@ -27,10 +27,18 @@ class ScourPolicyStatesOperations:
 
         return definitions
 
-    def policy_states_summarize_for_policy_definition(self, subscription):
+    def policy_states_summarize_for_resource(self, resourceId):
+        api_endpoint = self.config['AZURESDK']['policystatessummarizeforresource']
+        api_endpoint = api_endpoint.format(resourceId=resourceId)
+
+        with request_authenticated_session() as req:
+            resource_policy_function = req.post(api_endpoint).json()
+        return resource_policy_function
+
+    def policy_states_summarize_for_policy_definition(self, subscription, policyDefinitionName):
         api_endpoint = os.environ['PolicyStatesSummarizeForPolicyDefinition']
         api_endpoint = api_endpoint.format(subscriptionId=subscription,
-                                           policyDefinitionName='1f3afdf9-d0c9-4c3d-847f-89da613e70a8')
+                                           policyDefinitionName=policyDefinitionName)
         with request_authenticated_session() as req:
             policy_def_builtin = req.post(api_endpoint).json()
 
@@ -72,7 +80,7 @@ class ScourPolicyStatesOperations:
         api_endpoint = os.environ['PolicyStatesFilterandmultiplegroups']
         api_endpoint = api_endpoint.format(subscriptionId=subscriptionId)
 
-        with ReguestSession() as req:
+        with request_authenticated_session() as req:
             r_policy_states_filter_and_multiple_groups = req.post(api_endpoint).json()
 
         return r_policy_states_filter_and_multiple_groups
