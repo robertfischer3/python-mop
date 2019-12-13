@@ -1,9 +1,13 @@
-========
-Overview
-========
+.. image:: https://publicdomainvectors.org/photos/secchio-e-spugna-archite-01.png
+    :width: 150px
+    :align: left
+    :height: 150px
+    :alt: alternate text
 
+=======================
+The Mop Project (alpha)
+=======================
 .. start-badges
-
 .. list-table::
     :stub-columns: 1
 
@@ -35,7 +39,26 @@ Overview
 
 .. end-badges
 
-A Python library used to compile Azure resource compliance information
+Welcome to Mop project!
+
+Why Mop? You need mop to clean up your cloud mess!
+
+Organizations large and small love the agility of the cloud.  Most embrace the cloud for the ability to create compute
+assets quickly. However, that creation process is usually weak in applying standards and compliance.  Let us face it cloud
+governance is hard
+
+The Mop project seeks to build cloud comprehensions to feed machine learning.  This open source project is in the nascent
+stages. Currently the project framework in directed to adopting the framework controls found in the
+three major cloud providers: Azure, AWS, and Google Cloud.
+
+Why three public clouds? Why not focus on just one? Mop seek to foster the understand of utility computing by eventualing
+employing artificial intelligence to the comprehensions obtained by the framework
+
+Mop is open source Python project used to compile Public Cloud resource compliance information.  This project is in the
+early stages of development focus first on Azure.
+
+Project Stages:
+-Create a compliance reporting framework
 
 * Free software: MIT license
 
