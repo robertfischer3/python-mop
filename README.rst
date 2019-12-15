@@ -74,9 +74,21 @@ You can also install the in-development version with::
     pip install https://github.com/robertfischer3/python-mop/archive/master.zip
 
 
+Database
+=============
+This framework does not require the use of a database.  However, there are analysis code
+blocks that make use of a database.  For this version, the framework makes use of a SQL Server
+2019 for Linux docker image.  Microsoft provides a easy set up here:
+
+Quickstart: Run SQL Server container images with Docker
+https://docs.microsoft.com/en-us/sql/linux/quickstart-install-connect-docker?view=sql-server-ver15&pivots=cs1-bash#docker-demo
+
+
+
 Documentation
 =============
 
+Documentation is forthcoming...
 
 https://python-mop.readthedocs.io/
 

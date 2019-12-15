@@ -15,6 +15,9 @@ class DatbasePlugins(object):
     def create_database(self, server, database, user, password, driver):
         """Datbase creation hook"""
 
+    @dbhookspec
+    def delete_data(self, server, database, user, password, driver):
+        """Datbase deletion hook"""
 
 class SQLServerDatabase(object):
     """
@@ -41,7 +44,8 @@ class SQLServerDatabase(object):
         params = urllib.parse.quote_plus(connect_str)
         engine = create_engine("mssql+pyodbc:///?odbc_connect=%s" % params)
 
-        meta = MetaData()
+        # The database here is not quite formed properly with proper keys and indexes.
+        #TODO establish proper data model
 
         m = MetaData()
         t = Table('noncompliant', m,
@@ -82,9 +86,28 @@ class SQLServerDatabase(object):
                    Column('policy_assignment_id', String),
                    Column('policy_definition_id', String),
                    Column('compliant', Integer),
-                   Column('non-compliant', Integer),
-                   )
+                   Column('non-compliant', Integer))
 
         m.create_all(engine)
 
         return 0
+
+    @dbhookimpl
+    def delete_database(self, server, database, user, password, driver):
+        """
+            This function creates a SQL Server 2019 for Linux database table for handling results found in analysis
+            As the framework becomes more modular, multiple database initiation modules need to be created
+        :return:
+        """
+        self.driver = driver
+        self.server = server
+        self.database = database
+        self.user = user,
+        self.password = password
+
+        connect_str = \
+            'DRIVER={driver};SERVER={server};DATABASE={database};UID=SA;PWD={password}' \
+                .format(driver=self.driver, server=self.server, database=self.database, password=self.password)
+
+        params = urllib.parse.quote_plus(connect_str)
+        engine = create_engine("mssql+pyodbc:///?odbc_connect=%s" % params)
