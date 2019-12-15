@@ -48,7 +48,7 @@ class SQLServerDatabase(object):
         #TODO establish proper data model
 
         m = MetaData()
-        t = Table('noncompliant', m,
+        noncompliant = Table('noncompliant', m,
                   Column('id', Integer, primary_key=True),
                   Column('resource_id', String),
                   Column('management_group_ids', String),
@@ -78,7 +78,7 @@ class SQLServerDatabase(object):
                   Column('management_grp', String),
                   Column('timestamp', String))
 
-        t2 = Table('factcompliance', m,
+        factcompliance = Table('factcompliance', m,
                    Column('id', Integer, primary_key=True),
                    Column('resource_id', String),
                    Column('subscription_id', String),
@@ -90,7 +90,7 @@ class SQLServerDatabase(object):
 
         m.create_all(engine)
 
-        return 0
+        return m.tables
 
     @dbhookimpl
     def delete_database(self, server, database, user, password, driver):
@@ -111,3 +111,10 @@ class SQLServerDatabase(object):
 
         params = urllib.parse.quote_plus(connect_str)
         engine = create_engine("mssql+pyodbc:///?odbc_connect=%s" % params)
+
+        m = MetaData()
+        m.reflect(engine)
+
+        m.drop_all(engine)
+
+        return 0
