@@ -6,7 +6,7 @@ from mop.azure.utils.atomic_writes import atomic_write
 CONFVARIABLES = 'app.config.ini'
 OPERATIONSPATH = '../../../..'
 TESTVARIABLES = 'test.app.config.ini'
-TESTINGPATH='../../..'
+TESTINGPATH= '../../../..'
 
 @contextmanager
 def change_dir(destination):
@@ -18,7 +18,7 @@ def change_dir(destination):
         os.chdir(cwd)
 
 
-def create_baseline_configuration(subscription_id, tentant_id, generate_test=True):
+def create_baseline_configuration(generate_test=True):
     """
         The method creates the api configuration file for Azure API calls.  As Microsoft changes
     :return:
@@ -47,3 +47,7 @@ def create_baseline_configuration(subscription_id, tentant_id, generate_test=Tru
     if generate_test:
         with atomic_write(TESTVARIABLES, 'w') as testconfigfile:
             config.write(testconfigfile)
+
+
+if __name__ == "__main__":
+    main()

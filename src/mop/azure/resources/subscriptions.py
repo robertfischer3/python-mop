@@ -20,6 +20,10 @@ class Subscriptions:
 
 
     def list_subscriptions_displaynames_id(self):
+        """
+
+        :return:
+        """
         tenant_id = os.environ['TENANT']
         with request_authenticated_session() as req:
             endpoint = 'https://management.azure.com/subscriptions/?api-version=2015-01-01'
@@ -82,6 +86,12 @@ class Subscriptions:
         return df
 
     def list_management_grp_subscriptions_list(self, management_grp, subscription_id):
+        """
+
+        :param management_grp:
+        :param subscription_id:
+        :return:
+        """
 
         management_client = ManagementGroupsAPI(self.credentials)
         mngrp_subscriptions = management_client.entities.list(group_name=management_grp)

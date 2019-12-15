@@ -1,10 +1,11 @@
-import os
 import unittest
 from configparser import ConfigParser
+
 from dotenv import load_dotenv
 
 from mop.azure.analysis.compile_compliance import summarize_subscriptions
 from mop.azure.utils.create_configuration import TESTVARIABLES, change_dir, OPERATIONSPATH
+
 
 class TestAnalysisCompileCompliance(unittest.TestCase):
 

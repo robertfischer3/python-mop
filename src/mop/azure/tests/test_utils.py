@@ -42,7 +42,7 @@ class TestCaseUtils(unittest.TestCase):
         subscription_id = os.environ['SUB']
         tenant_id = os.environ['TENANT']
         with change_dir(TESTINGPATH):
-            create_baseline_configuration(tentant_id=tenant_id, subscription_id=subscription_id)
+            create_baseline_configuration()
             self.assertEqual(os.path.isfile('app.config.ini'), True)
 
 
@@ -76,8 +76,6 @@ class TestConfigParser(unittest.TestCase):
 
         print(config.read(TESTVARIABLES))
         print(config['DEFAULT']['subscription'])
-
-
 
 if __name__ == '__main__':
     unittest.main()

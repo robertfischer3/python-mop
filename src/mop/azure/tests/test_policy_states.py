@@ -77,7 +77,7 @@ class TestOperationsPolicyStates(unittest.TestCase):
 
     def test_generic_function(self):
         '''
-            Demonstration the composability of the framework.  An next method can be called at any time
+            Demonstration the composability of the framework. Returns a method can be called at any time
         :return:
         '''
         subscriptionId = os.environ['SUB']
@@ -87,7 +87,8 @@ class TestOperationsPolicyStates(unittest.TestCase):
         # a simple replace makes the URL a workable generic call to the API
         api_config_key = api_config_key.replace('{subscriptionId}', '{}')
 
-        result = polic_states.policystates_genericfunc(api_config_key, subscriptionId, )
+        execute = polic_states.policystates_genericfunc(api_config_key, subscriptionId, )
+        result = execute()
 
         self.assertIsNotNone(result)
 

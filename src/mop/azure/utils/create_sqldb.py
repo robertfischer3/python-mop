@@ -1,21 +1,26 @@
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String
-from sqlalchemy import create_engine
 import urllib
+
 import pluggy
+from sqlalchemy import MetaData, Table, Column, Integer, String
+from sqlalchemy import create_engine
 
 dbhookimpl = pluggy.HookimplMarker("Analysis")
 dbhookspec = pluggy.HookspecMarker("Analysis")
 
+
 class DatbasePlugins(object):
     """A hook specification namespace."""
+
     @dbhookspec
     def create_database(self, server, database, user, password, driver):
         """Datbase creation hook"""
+
 
 class SQLServerDatabase(object):
     """
         This class is an implementation of the dbhookspec
     """
+
     @dbhookimpl
     def create_database(self, server, database, user, password, driver):
         """
@@ -30,7 +35,7 @@ class SQLServerDatabase(object):
         self.password = password
 
         connect_str = \
-            'DRIVER={driver};SERVER={server};DATABASE={database};UID=SA;PWD={password}'\
+            'DRIVER={driver};SERVER={server};DATABASE={database};UID=SA;PWD={password}' \
                 .format(driver=self.driver, server=self.server, database=self.database, password=self.password)
 
         params = urllib.parse.quote_plus(connect_str)
@@ -64,7 +69,22 @@ class SQLServerDatabase(object):
                   Column('resource_type', String),
                   Column('serialize', String),
                   Column('subscription_id', String),
+                  Column('tenant_id', String),
+                  Column('subscription_display_name', String),
+                  Column('management_grp', String),
                   Column('timestamp', String))
+
+        t2 = Table('factcompliance', m,
+                   Column('id', Integer, primary_key=True),
+                   Column('resource_id', String),
+                   Column('subscription_id', String),
+                   Column('tenant_id', String),
+                   Column('policy_assignment_id', String),
+                   Column('policy_definition_id', String),
+                   Column('compliant', Integer),
+                   Column('non-compliant', Integer),
+                   )
+
         m.create_all(engine)
 
         return 0
