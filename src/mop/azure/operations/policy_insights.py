@@ -9,6 +9,8 @@ from azure.mgmt.managementgroups import operations
 import adal, uuid, time, sys
 from dotenv import load_dotenv
 
+from mop.azure.connections import request_authenticated_session
+
 
 class PolicyInsights:
 
@@ -17,6 +19,22 @@ class PolicyInsights:
         self.credentials = credentials
         self.subscriptions = None
         self.policy_insights = None
+
+    def policyinsights_genericfunc(self, api_endpoint, *args):
+        """
+            This function can theoretically call any Azure SDK API the service pricipal has access to
+        :param api_config_key:
+        :param args:
+        :return:
+        """
+        # The policyinsights_genericfunc has no way of learning the named string format parameters
+        # a simple replace makes the URL a workable generic call to the API
+        # example: api_config_key.replace('{subscriptionId}', '{}')
+
+        api_endpoint = api_endpoint.format(*args)
+
+        with request_authenticated_session() as req:
+            return req.post(api_endpoint).json()
 
     def policy_insights_client_query(self, subscription_id_param, policy_states='latest'):
         '''

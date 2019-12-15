@@ -1,7 +1,7 @@
 import pandas as pd
 
 from mop.azure.operations.policy_states import ScourPolicyStatesOperations
-from mop.azure.utils.manage_api import CONFVARIABLES, change_dir, TESTINGPATH
+from mop.azure.utils.create_configuration import CONFVARIABLES, change_dir, TESTINGPATH
 
 
 def summarize_subscriptions(subscriptonId):

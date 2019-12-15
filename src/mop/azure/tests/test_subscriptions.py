@@ -1,7 +1,7 @@
 import unittest
 import os
 from dotenv import load_dotenv
-from mop.azure.utils.manage_api import TESTVARIABLES, change_dir, CONFVARIABLES, TESTINGPATH
+from mop.azure.utils.create_configuration import change_dir, CONFVARIABLES, OPERATIONSPATH
 from configparser import ConfigParser
 from mop.azure.resources.subscriptions import Subscriptions
 from mop.azure.connections import Connections
@@ -12,12 +12,11 @@ class TestResourcesSubscriptions(unittest.TestCase):
     def setUp(self) -> None:
         load_dotenv()
         with change_dir('..'):
-            with change_dir(TESTINGPATH):
+            with change_dir(OPERATIONSPATH):
 
                 config = ConfigParser()
-                config.read(TESTVARIABLES)
+                config.read(OPERATIONSPATH)
         logging.basicConfig(level=logging.DEBUG)
-        logging.debug('setup...')
 
     def test_listsubscriptions(self):
 

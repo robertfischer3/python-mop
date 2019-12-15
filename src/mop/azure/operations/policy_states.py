@@ -8,8 +8,7 @@ from azure.mgmt.policyinsights.models import QueryOptions
 from mop.azure.connections import AzureSDKAuthentication, request_authenticated_session
 from azure.mgmt.policyinsights.models import QueryFailureException
 
-from mop.azure.utils.manage_api import CONFVARIABLES, change_dir, OPERATIONSPATH
-
+from mop.azure.utils.create_configuration import CONFVARIABLES, change_dir, OPERATIONSPATH
 
 class ScourPolicyStatesOperations:
 
@@ -19,13 +18,30 @@ class ScourPolicyStatesOperations:
             self.config = ConfigParser()
             self.config.read(CONFVARIABLES)
 
-    def list_operations(self, subscription):
-        api_endpoint = os.environ['PolicyDefinitionsListBuiltin']
-        with request_authenticated_session as req:
-            print(req.headers)
-            definitions = req.post(api_endpoint).json()
+    def policystates_genericfunc(self, api_endpoint, *args):
+        """
+            This function can theoretically call any Azure SDK API the service pricipal has access to
+        :param api_config_key:
+        :param args:
+        :return:
+        """
+        # The policystates_genericfunc has no way of learning the named string format parameters
+        # a simple replace makes the URL a workable generic call to the API
+        # example: api_config_key.replace('{subscriptionId}', '{}')
 
-        return definitions
+        api_endpoint = api_endpoint.format(*args)
+
+        with request_authenticated_session() as req:
+            return req.post(api_endpoint).json()
+
+    def list_operations(self, subscriptionId):
+        api_endpoint = self.config['AZURESDK']['PolicyDefinitionsListBuiltin']
+        api_endpoint = api_endpoint.format(subscriptionId=subscriptionId)
+        with request_authenticated_session as req:
+
+            definitions_function = req.post(api_endpoint).json()
+
+        return definitions_function
 
     def policy_states_summarize_for_resource(self, resourceId):
         api_endpoint = self.config['AZURESDK']['policystatessummarizeforresource']

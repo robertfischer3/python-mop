@@ -5,7 +5,7 @@ from configparser import ConfigParser
 
 from dotenv import load_dotenv
 
-from mop.azure.utils.manage_api import change_dir, create_baseline_configuration, TESTVARIABLES, TESTINGPATH
+from mop.azure.utils.create_configuration import change_dir, create_baseline_configuration, TESTVARIABLES, TESTINGPATH
 from mop.azure.utils.atomic_writes import atomic_write
 
 
@@ -76,6 +76,7 @@ class TestConfigParser(unittest.TestCase):
 
         print(config.read(TESTVARIABLES))
         print(config['DEFAULT']['subscription'])
+
 
 
 if __name__ == '__main__':

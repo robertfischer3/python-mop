@@ -13,8 +13,8 @@ import os
 import adal
 import requests
 from configparser import ConfigParser
-from mop.azure.utils.manage_api import CONFVARIABLES, OPERATIONSPATH
-from mop.azure.utils.manage_api import change_dir
+from mop.azure.utils.create_configuration import CONFVARIABLES, OPERATIONSPATH
+from mop.azure.utils.create_configuration import change_dir
 
 
 class EvaluatePolicies:

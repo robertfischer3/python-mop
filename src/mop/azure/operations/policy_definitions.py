@@ -1,8 +1,37 @@
+from configparser import ConfigParser
+
 from azure.mgmt.resource.policy import PolicyClient
 import pandas as pd
+from dotenv import load_dotenv
+
+from mop.azure.connections import request_authenticated_session
+from mop.azure.utils.create_configuration import change_dir, CONFVARIABLES, OPERATIONSPATH
+
 
 class PolicyDefinitions():
-    pass
+    def __init__(self):
+        load_dotenv()
+        with change_dir(OPERATIONSPATH):
+            self.config = ConfigParser()
+            self.config.read(CONFVARIABLES)
+
+    def policyinsights_genericfunc(self, api_endpoint, *args):
+        """
+            This function can theoretically call any Azure SDK API the service pricipal has access to
+        :param api_config_key:
+        :param args:
+        :return:
+        """
+        # The policyinsights_genericfunc has no way of learning the named string format parameters
+        # a simple replace makes the URL a workable generic call to the API
+        # example: api_config_key.replace('{subscriptionId}', '{}')
+
+        api_endpoint = api_endpoint.format(*args)
+
+        with request_authenticated_session() as req:
+            return req.post(api_endpoint).json()
+
+
 
 def get_policydefinitions_management_grp(creds, base_subscription, management_grp):
     '''

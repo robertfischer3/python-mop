@@ -3,7 +3,7 @@ from configparser import ConfigParser
 from dotenv import load_dotenv
 
 from mop.azure.connections import request_authenticated_session
-from mop.azure.utils.manage_api import CONFVARIABLES, change_dir, OPERATIONSPATH
+from mop.azure.utils.create_configuration import CONFVARIABLES, change_dir, OPERATIONSPATH
 from azure.mgmt.policyinsights.models import QueryOptions
 from mop.azure.connections import request_authenticated_session
 from azure.mgmt.policyinsights.models import QueryFailureException
@@ -20,7 +20,6 @@ class VNet:
     def vnets_list(self, subscription):
         api_endpoint = self.config['AZURESDK']['VirtualNetworksList']
         with request_authenticated_session as req:
-            print(req.headers)
             list_vnets_function = req.post(api_endpoint).json()
 
         return list_vnets_function
