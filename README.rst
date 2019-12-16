@@ -56,6 +56,9 @@ Dynamic Service configuration
 Code generating code
 and more...
 
+Active Deployments
+=================
+This project is being used and tested in one of the worlds largest companies. Since this testing provides an assessment of production security configurations, the test occurs in secure implementation. However, this project is looking for vendor sponsorship to enable Travis build reporting. 
 
 License
 ========
