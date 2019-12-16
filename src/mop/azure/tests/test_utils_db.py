@@ -74,7 +74,7 @@ class MyTestCase(unittest.TestCase):
 
         self.assertEqual(result, [0])
 
-    def test_base_class(self):
+    def test_base_class_sqlserver(self):
         """
          Testing base class for coverage only.  Class will be developed later
         :return:
@@ -83,16 +83,22 @@ class MyTestCase(unittest.TestCase):
         database = "TestDB"
         username = "SA"
         password = self.password
+        db_driver = "{ODBC Driver 17 for SQL Server}"
 
-        base = BaseDB(
+        baseDb = BaseDB(
             server=server,
             database=database,
             user=username,
             password=password,
-            driver="{ODBC Driver 17 for SQL Server}",
-            engine="mssql",
+            driver=db_driver,
+            dialect="mssql",
         )
-        self.assertIsNotNone(base)
+        self.assertIsNotNone(baseDb)
+
+        engine = baseDb.get_db_engine()
+        self.assertIsNotNone(engine)
+
+        baseDb.get_db_model(engine=engine)
 
     def test_something(self):
         # Testing pyodbc
