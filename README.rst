@@ -73,11 +73,7 @@ Framework Features
 
 Nanscent pluggable architectures using Pluggy
 
-.. image:: https://pluggy.readthedocs.io/en/latest/_static/img/plug.png
-    :width: 50px
-    :align: left
-    :height: 50px
-    :alt: alternate text
+.. image:: pluggy.png
 
 Easy data storage and analysis using databases and Alchemy ORM
 
