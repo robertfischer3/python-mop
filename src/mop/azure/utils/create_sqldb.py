@@ -106,7 +106,7 @@ class SQLServerDatabase(object):
             Column("policy_assignment_id", String),
             Column("policy_definition_id", String),
             Column("compliant", Integer),
-            Column("non-compliant", Integer),
+            Column("noncompliant", Integer),
         )
 
         m.create_all(engine)

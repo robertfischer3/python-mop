@@ -6,7 +6,7 @@ from mop.azure.resources.vnets import VNet
 
 from dotenv import load_dotenv
 
-from mop.azure.utils.create_configuration import change_dir, OPERATIONSPATH, TESTVARIABLES
+from mop.azure.utils.create_configuration import change_dir, OPERATIONSPATH, TESTVARIABLES, CONFVARIABLES
 
 
 class TestVNetInformation(unittest.TestCase):
@@ -19,7 +19,7 @@ class TestVNetInformation(unittest.TestCase):
                 "Current change_dir working directory {}".format(os.getcwd())
             )
             self.config = ConfigParser()
-            self.config.read(TESTVARIABLES)
+            self.config.read(CONFVARIABLES)
 
     def test_VNetAPIs(self):
         vnet = VNet()

@@ -10,6 +10,8 @@ from mop.azure.utils.create_configuration import (
     create_baseline_configuration,
     TESTVARIABLES,
     TESTINGPATH,
+    CONFVARIABLES,
+    OPERATIONSPATH
 )
 from mop.azure.utils.atomic_writes import atomic_write
 
@@ -46,7 +48,7 @@ class TestCaseUtils(unittest.TestCase):
     def test_directory_context_manager(self):
         subscription_id = os.environ["SUB"]
         tenant_id = os.environ["TENANT"]
-        with change_dir(TESTINGPATH):
+        with change_dir(OPERATIONSPATH):
             create_baseline_configuration()
             self.assertEqual(os.path.isfile("app.config.ini"), True)
 
@@ -78,10 +80,11 @@ class TestConfigParser(unittest.TestCase):
                 os.remove(tmpTESTVARIABLES)
 
     def test_read_testvariables_ini(self):
-        config = ConfigParser()
 
-        print(config.read(TESTVARIABLES))
-        print(config["DEFAULT"]["subscription"])
+        with change_dir(TESTINGPATH):
+            config = ConfigParser()
+            print(config.read(TESTVARIABLES))
+            print(config["DEFAULT"]["subscription_id"])
 
 
 if __name__ == "__main__":

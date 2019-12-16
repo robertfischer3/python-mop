@@ -8,12 +8,13 @@ branch = true
 source =
     mop
     tests
-omit =
-    *src/mop/azure/tests/test_policy_states*
-    *src/mop/azure/analysis/policy_analysis*
+
 parallel = true
 
 [report]
 show_missing = true
 precision = 2
-omit = *migrations*
+omit =
+    *migrations*
+    src/mop/azure/utils/create_keyvault.py
+    src/mop/azure/utils/composer.py

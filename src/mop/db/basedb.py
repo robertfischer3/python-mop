@@ -32,23 +32,23 @@ class BaseDB:
         params = urllib.parse.quote_plus(connect_str)
         engine_str = "{dialect}+pyodbc:///?odbc_connect=%s".format(dialect=self.dialect)
         engine = create_engine(engine_str % params)
-        return engine
+        self.engine = engine
+        return self.engine
 
     def get_db_model(self, engine):
 
         Base = automap_base()
 
-        # engine, suppose it has two tables 'factcompliance' and 'address' set up
-        engine = self.get_db_engine()
-
+        # engine, suppose it has two tables 'factcompliance' and 'noncompliant' set up
         # reflect the tables
         Base.prepare(engine, reflect=True)
 
         # mapped classes are now created with names by default
         # matching that of the table name.
-        factcompliance = Base.classes.factcompliance
-        noncompliant = Base.classes.noncompliant
+        self.factcompliance = Base.classes.factcompliance
+        self.noncompliant = Base.classes.noncompliant
 
-        session = Session(engine)
+        return self.factcompliance, self.noncompliant
+
 
 

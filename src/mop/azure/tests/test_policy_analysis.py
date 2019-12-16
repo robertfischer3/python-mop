@@ -4,7 +4,7 @@ from configparser import ConfigParser
 import os
 from dotenv import load_dotenv
 
-from mop.azure.analysis.compile_compliance import summarize_subscriptions
+from mop.azure.analysis.compile_compliance import SummarizeSubscription
 from mop.azure.utils.create_configuration import (
     TESTVARIABLES,
     change_dir,
@@ -24,5 +24,6 @@ class TestAnalysisCompileCompliance(unittest.TestCase):
 
     def test_summarize_subscriptions(self):
         subscription_id = self.config["DEFAULT"]["subscription_id"]
-        df = summarize_subscriptions(subscription_id)
+        summarize = SummarizeSubscription()
+        df = summarize.summarize_subscriptions(subscription_id)
         print(df)

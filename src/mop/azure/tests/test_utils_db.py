@@ -24,7 +24,7 @@ class MyTestCase(unittest.TestCase):
         # Server is the IP address or DNS of the database server
         server = "172.17.0.1"
         # Can be any database name, as long as you are consistent
-        database = "TestDB"
+        database = "TestDB2"
 
         # Do not use SA
         user = "SA"
@@ -53,7 +53,7 @@ class MyTestCase(unittest.TestCase):
         # Server is the IP address or DNS of the database server
         server = "172.17.0.1"
         # Can be any database name, as long as you are consistent
-        database = "TestDB"
+        database = "TestDB2"
 
         # Do not use SA
         user = "SA"

@@ -31,6 +31,13 @@ def create_baseline_configuration(generate_test=True):
         "management_grp_id": os.environ["MANGRP"],
         "tenant_id": os.environ["TENANT"],
     }
+    config["SQLSERVER"] = {
+        "server":"tcp:172.17.0.1",
+        "database":"TestDB",
+        "username": "SA",
+        "db_driver":"{ODBC Driver 17 for SQL Server}",
+        "dialect":"mssql"
+    }
     config["LOGGING"] = {"level": "DEBUG"}
     config["AZURESDK"] = {
         "PolicyStatesSummarizeForPolicyDefinition": "https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01",
