@@ -1,0 +1,120 @@
+(python3) robert@ubuntu:~/python3$ pytest
+===================================================================================================================== test session starts =====================================================================================================================
+platform linux -- Python 3.7.3, pytest-5.3.2, py-1.8.0, pluggy-0.13.1
+rootdir: /home/robert/python3, inifile: setup.cfg, testpaths: mop, tests/
+plugins: cov-2.8.1
+collected 16 items
+
+src/mop/azure/tests/test_policy_analysis.py F                                                                                                                                                                                                           [  6%]
+src/mop/azure/tests/test_policy_states.py ...F                                                                                                                                                                                                          [ 31%]
+src/mop/azure/tests/test_subscriptions.py .                                                                                                                                                                                                             [ 37%]
+src/mop/azure/tests/test_utils.py .FFF                                                                                                                                                                                                                  [ 62%]
+src/mop/azure/tests/test_utils_db.py ....                                                                                                                                                                                                               [ 87%]
+src/mop/azure/tests/test_vnets.py F                                                                                                                                                                                                                     [ 93%]
+tests/test_mop.py .                                                                                                                                                                                                                                     [100%]
+
+========================================================================================================================== FAILURES ===========================================================================================================================
+_________________________________________________________________________________________________ TestAnalysisCompileCompliance.test_summarize_subscriptions __________________________________________________________________________________________________
+src/mop/azure/tests/test_policy_analysis.py:26: in test_summarize_subscriptions
+    subscription_id = self.config["DEFAULT"]["subscription_id"]
+/usr/lib/python3.7/configparser.py:1251: in __getitem__
+    raise KeyError(key)
+E   KeyError: 'subscription_id'
+__________________________________________________________________________________________ TestOperationsPolicyStates.test_policy_states_summarize_for_subscription ___________________________________________________________________________________________
+src/mop/azure/tests/test_policy_states.py:49: in test_policy_states_summarize_for_subscription
+    subscription = self.config["DEFAULT"]["subscription_id"]
+/usr/lib/python3.7/configparser.py:1251: in __getitem__
+    raise KeyError(key)
+E   KeyError: 'subscription_id'
+________________________________________________________________________________________________________ TestCaseUtils.test_directory_context_manager _________________________________________________________________________________________________________
+src/mop/azure/utils/atomic_writes.py:53: in atomic_write
+    os.rename(atomic_tmp_file.name, file)
+E   PermissionError: [Errno 13] Permission denied: '/tmp/tmpknzc9f6r.ini' -> 'app.config.ini'
+
+During handling of the above exception, another exception occurred:
+src/mop/azure/tests/test_utils.py:52: in test_directory_context_manager
+    create_baseline_configuration()
+src/mop/azure/utils/create_configuration.py:57: in create_baseline_configuration
+    config.write(configfile)
+/usr/lib/python3.7/contextlib.py:119: in __exit__
+    next(self.gen)
+src/mop/azure/utils/atomic_writes.py:55: in atomic_write
+    os.rename(tmp, file)
+E   UnboundLocalError: local variable 'tmp' referenced before assignment
+______________________________________________________________________________________________________ TestConfigParser.test_create_config_file_sections ______________________________________________________________________________________________________
+src/mop/azure/utils/atomic_writes.py:53: in atomic_write
+    os.rename(atomic_tmp_file.name, file)
+E   PermissionError: [Errno 13] Permission denied: '/tmp/tmpp0pinwlf.ini' -> 'tmp_test.app.config.ini'
+
+During handling of the above exception, another exception occurred:
+src/mop/azure/tests/test_utils.py:75: in test_create_config_file_sections
+    config.write(configfile)
+/usr/lib/python3.7/contextlib.py:119: in __exit__
+    next(self.gen)
+src/mop/azure/utils/atomic_writes.py:55: in atomic_write
+    os.rename(tmp, file)
+E   UnboundLocalError: local variable 'tmp' referenced before assignment
+________________________________________________________________________________________________________ TestConfigParser.test_read_testvariables_ini _________________________________________________________________________________________________________
+src/mop/azure/tests/test_utils.py:87: in test_read_testvariables_ini
+    print(config["DEFAULT"]["subscription_id"])
+/usr/lib/python3.7/configparser.py:1251: in __getitem__
+    raise KeyError(key)
+E   KeyError: 'subscription_id'
+-------------------------------------------------------------------------------------------------------------------- Captured stdout call ---------------------------------------------------------------------------------------------------------------------
+[]
+______________________________________________________________________________________________________________ TestVNetInformation.test_VNetAPIs ______________________________________________________________________________________________________________
+src/mop/azure/tests/test_vnets.py:26: in test_VNetAPIs
+    subscription = self.config['DEFAULT']['subscription_id']
+/usr/lib/python3.7/configparser.py:1251: in __getitem__
+    raise KeyError(key)
+E   KeyError: 'subscription_id'
+
+----------- coverage: platform linux, python 3.7.3-final-0 -----------
+Name                                                 Stmts   Miss Branch BrPart     Cover   Missing
+---------------------------------------------------------------------------------------------------
+src/mop/__init__.py                                      1      0      0      0   100.00%
+src/mop/__main__.py                                      3      1      2      1    60.00%   13->14, 14
+src/mop/aws/__init__.py                                  0      0      0      0   100.00%
+src/mop/azure/__init__.py                                0      0      0      0   100.00%
+src/mop/azure/analysis/__init__.py                       0      0      0      0   100.00%
+src/mop/azure/analysis/compile_compliance.py            60     49     24      0    13.10%   14-41, 44-93
+src/mop/azure/analysis/policy_analysis.py               65      8     12      1    83.12%   41-57, 104->109
+src/mop/azure/connections.py                            72     26      4      1    61.84%   31-33, 40->exit, 55, 105-119, 125-143
+src/mop/azure/operations/__init__.py                     0      0      0      0   100.00%
+src/mop/azure/operations/policy_definitions.py          34     13      4      0    60.53%   17-20, 33-36, 46-50, 64-82
+src/mop/azure/operations/policy_insights.py             43     11      6      0    73.47%   33-36, 67-77, 85-104
+src/mop/azure/operations/policy_states.py               73     46      0      0    36.99%   41-46, 55-60, 71-78, 86-91, 103-115, 118-124, 132-138, 147-152, 164-179
+src/mop/azure/operations/policy_states_resource.py      16      9      0      0    43.75%   15-18, 26-31
+src/mop/azure/resources/__init__.py                      0      0      0      0   100.00%
+src/mop/azure/resources/subscriptions.py                58     27     16      0    47.30%   27-36, 58-62, 113-168
+src/mop/azure/resources/vm.py                            0      0      0      0   100.00%
+src/mop/azure/resources/vnets.py                        31     14      0      0    54.84%   24-28, 31-36, 39-46
+src/mop/azure/tests/__init__.py                          0      0      0      0   100.00%
+src/mop/azure/tests/test_policy_analysis.py             21      3      0      0    85.71%   27-29
+src/mop/azure/tests/test_policy_states.py               74     32      6      1    53.75%   31-42, 50-79, 112->113, 113
+src/mop/azure/tests/test_subscriptions.py               24      0      2      0   100.00%
+src/mop/azure/tests/test_utils.py                       49      5      4      1    84.91%   53, 77-80, 90->91, 91
+src/mop/azure/tests/test_utils_db.py                    54      1      2      1    96.43%   127->128, 128
+src/mop/azure/tests/test_vnets.py                       22      3      0      0    86.36%   28-31
+src/mop/azure/utils/__init__.py                          0      0      0      0   100.00%
+src/mop/azure/utils/atomic_writes.py                    31      7      8      3    74.36%   16-18, 36->37, 37-39, 45->48, 48, 52->58
+src/mop/azure/utils/create_configuration.py             27      4      4      1    77.42%   59-61, 64->65, 65
+src/mop/azure/utils/create_sqldb.py                     33      0      0      0   100.00%
+src/mop/azure/utils/manager.py                          15     11      2      1    29.41%   8-27, 30->31, 31
+src/mop/cli.py                                           7      0      0      0   100.00%
+src/mop/db/__init__.py                                   0      0      0      0   100.00%
+src/mop/db/basedb.py                                    25      0      0      0   100.00%
+src/mop/framework/__init__.py                            0      0      0      0   100.00%
+src/mop/framework/parameters.py                          0      0      0      0   100.00%
+---------------------------------------------------------------------------------------------------
+TOTAL                                                  838    270     96     11    64.13%
+
+=================================================================================================================== short test summary info ===================================================================================================================
+FAILED src/mop/azure/tests/test_policy_analysis.py::TestAnalysisCompileCompliance::test_summarize_subscriptions - KeyError: 'subscription_id'
+FAILED src/mop/azure/tests/test_policy_states.py::TestOperationsPolicyStates::test_policy_states_summarize_for_subscription - KeyError: 'subscription_id'
+FAILED src/mop/azure/tests/test_utils.py::TestCaseUtils::test_directory_context_manager - UnboundLocalError: local variable 'tmp' referenced before assignment
+FAILED src/mop/azure/tests/test_utils.py::TestConfigParser::test_create_config_file_sections - UnboundLocalError: local variable 'tmp' referenced before assignment
+FAILED src/mop/azure/tests/test_utils.py::TestConfigParser::test_read_testvariables_ini - KeyError: 'subscription_id'
+FAILED src/mop/azure/tests/test_vnets.py::TestVNetInformation::test_VNetAPIs - KeyError: 'subscription_id'
+========================================================================================================== 6 failed, 10 passed in 667.35s (0:11:07) ===========================================================================================================
+(python3) robert@ubuntu:~/python3$
