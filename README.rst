@@ -14,7 +14,7 @@ Welcome to Mop project!
 https://github.com/robertfischer3/python-mop/blob/master/testingresults/test-16-dec-2019.html
 
 
-..image::https://img.shields.io/github/commit-activity/w/robertfischer3/python-mop
+https://img.shields.io/github/commit-activity/w/robertfischer3/python-mop
 https://github.com/robertfischer3/python-mop/pulse
 
 
