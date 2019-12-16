@@ -7,39 +7,11 @@
 =======================
 The Mop Project (alpha)
 =======================
-.. start-badges
-.. list-table::
-    :stub-columns: 1
-
-    * - docs
-      - |docs|
-    * - tests
-      - | |travis|
-        |
-        | |codeclimate|
-    * - package
-      - | |commits-since|
-.. |docs| image:: https://readthedocs.org/projects/python-mop/badge/?style=flat
-    :target: https://readthedocs.org/projects/python-mop
-    :alt: Documentation Status
-
-.. |tests| image::https://img.shields.io/badge/tests-current%20tests-yellow
-    :target:https://github.com/robertfischer3/python-mop/blob/master/testingresults/test-16-dec-2019.html
-
-.. |codeclimate| image:: https://codeclimate.com/github/robertfischer3/python-mop/badges/gpa.svg
-   :target: https://codeclimate.com/github/robertfischer3/python-mop
-   :alt: CodeClimate Quality Status
-
-.. |commits-since| image:: https://img.shields.io/github/commit-activity/w/robertfischer3/python-mop
-    :alt: Commits since latest release
-    :target: https://img.shields.io/github/commit-activity/w/robertfischer3/python-mop
-
-
-
-.. end-badges
 
 Welcome to Mop project!
 
+|Test results|![Private Network Testing](https://img.shields.io/badge/tests-current%20tests-yellow)  [Private Test Server Results](https://github.com/robertfischer3/python-mop/blob/master/testingresults/test-16-dec-2019.html)|
+|Commits per week|![Commits](https://img.shields.io/github/commit-activity/w/robertfischer3/python-mop)|
 
 Why Mop? You need mop to clean up your cloud mess!
 
