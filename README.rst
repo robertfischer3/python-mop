@@ -10,7 +10,9 @@ The Mop Project (alpha)
 
 Welcome to Mop project!
 
-![Private Network Testing](https://img.shields.io/badge/tests-current%20tests-yellow)  
+.. image:: https://img.shields.io/badge/tests-current%20tests-yellow
+
+
 [Private Network Testing](https://github.com/robertfischer3/python-mop/blob/master/testingresults/test-16-dec-2019.html)|
 |Commits|![Commits](https://img.shields.io/github/commit-activity/w/robertfischer3/python-mop)|
 
