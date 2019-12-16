@@ -5,7 +5,14 @@ from configparser import ConfigParser
 
 from dotenv import load_dotenv
 
-from mop.azure.utils.manage_api import change_dir, create_baseline_configuration, TESTVARIABLES, TESTINGPATH
+from mop.azure.utils.create_configuration import (
+    change_dir,
+    create_baseline_configuration,
+    TESTVARIABLES,
+    TESTINGPATH,
+    CONFVARIABLES,
+    OPERATIONSPATH
+)
 from mop.azure.utils.atomic_writes import atomic_write
 
 
@@ -39,44 +46,46 @@ class TestCaseUtils(unittest.TestCase):
                 self.assertEqual(f.read(), "roger that")
 
     def test_directory_context_manager(self):
-        subscription_id = os.environ['SUB']
-        tenant_id = os.environ['TENANT']
-        with change_dir(TESTINGPATH):
-            create_baseline_configuration(tentant_id=tenant_id, subscription_id=subscription_id)
-            self.assertEqual(os.path.isfile('app.config.ini'), True)
+        subscription_id = os.environ["SUB"]
+        tenant_id = os.environ["TENANT"]
+        with change_dir(OPERATIONSPATH):
+            create_baseline_configuration()
+            self.assertEqual(os.path.isfile("app.config.ini"), True)
 
 
 class TestConfigParser(unittest.TestCase):
     def setUp(self) -> None:
         load_dotenv()
-        self.subscription = os.environ['SUB']
+        self.subscription = os.environ["SUB"]
 
     def test_create_config_file_sections(self):
+        tmpTESTVARIABLES = "tmp_" + TESTVARIABLES
         config = ConfigParser()
-        #An active subscription is generally needed for this application
-        #However, subscription ids should be guarded.  Hence, we use an .env value
+        # An active subscription is generally needed for this application
+        # However, subscription ids should be guarded.  Hence, we use an .env value
 
-        config['DEFAULT'] = {'subscription': self.subscription}
-        config['AZURESDK'] = {
-            'PolicyStatesSummarizeForPolicyDefinition': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01',
-            'PolicyStatesSummarizeForSubscription': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01',
-            'PolicyStatesSummarizeForSubscriptionFiltered': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01&$filter={filter}',
+        config["DEFAULT"] = {"subscription": self.subscription}
+        config["AZURESDK"] = {
+            "PolicyStatesSummarizeForPolicyDefinition": "https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01",
+            "PolicyStatesSummarizeForSubscription": "https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01",
+            "PolicyStatesSummarizeForSubscriptionFiltered": "https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01&$filter={filter}",
         }
+        with change_dir(TESTINGPATH):
+            with atomic_write(tmpTESTVARIABLES, "w") as configfile:
+                config.write(configfile)
 
-        with atomic_write(TESTVARIABLES, "w") as configfile:
-            config.write(configfile)
-
-        self.assertEqual(os.path.isfile(TESTVARIABLES), True)
-        # This is a temporary local test file because the working directory for the test has not been altered
-        if os.path.isfile(TESTVARIABLES):
-            os.remove(TESTVARIABLES)
+            self.assertEqual(os.path.isfile(tmpTESTVARIABLES), True)
+            # This is a temporary local test file because the working directory for the test has not been altered
+            if os.path.isfile(tmpTESTVARIABLES):
+                os.remove(tmpTESTVARIABLES)
 
     def test_read_testvariables_ini(self):
-        config = ConfigParser()
 
-        print(config.read(TESTVARIABLES))
-        print(config['DEFAULT']['subscription'])
+        with change_dir(TESTINGPATH):
+            config = ConfigParser()
+            print(config.read(TESTVARIABLES))
+            print(config["DEFAULT"]["subscription_id"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

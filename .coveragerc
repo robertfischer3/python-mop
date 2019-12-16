@@ -8,9 +8,13 @@ branch = true
 source =
     mop
     tests
+
 parallel = true
 
 [report]
 show_missing = true
 precision = 2
-omit = *migrations*
+omit =
+    *migrations*
+    src/mop/azure/utils/create_keyvault.py
+    src/mop/azure/utils/composer.py

@@ -7,6 +7,7 @@ from atomicwrites import AtomicWriter
 from contextlib import contextmanager
 from tempfile import NamedTemporaryFile
 
+
 class SuffixWriter(AtomicWriter):
     def get_fileobject(self, **kwargs):
         """
@@ -15,6 +16,7 @@ class SuffixWriter(AtomicWriter):
         suffix = pathlib.Path(self._path).suffix
         f = super().get_fileobject(suffix=suffix, **kwargs)
         return f
+
 
 @contextmanager
 def atomic_write(file, mode="w", as_file=True, **kwargs):
@@ -33,7 +35,7 @@ def atomic_write(file, mode="w", as_file=True, **kwargs):
     # If the write fails, then restore the original configuration file
     if os.path.isfile(file):
         save_path = file
-        tmp = file +'.{}.old'.format(str(uuid.uuid4().hex)[:12])
+        tmp = file + ".{}.old".format(str(uuid.uuid4().hex)[:12])
         os.rename(file, tmp)
 
     try:
