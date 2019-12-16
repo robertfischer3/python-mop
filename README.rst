@@ -7,8 +7,9 @@
 =======================
 The Mop Project (alpha)
 =======================
+By Robert Fischer
 
-Welcome to Mop project!
+Welcome to Mop project! Mop is an open source project written in Python.
 
 .. image:: https://img.shields.io/badge/tests-current%20tests-yellow
 https://github.com/robertfischer3/python-mop/blob/master/testingresults/test-16-dec-2019.html
@@ -41,6 +42,19 @@ Project Stages:
 -Develop analysis layer to aggregate data (in progress)
 
 -Apply machine learning to develop idea configuration models
+
+Architectural Features
+======================
+This architecture makes use of the following techniques:
+Metaprogramming
+Object Relational Mapping (ORM)
+Decorators
+Composition
+Templated Code
+Cookie Current project template
+Dynamic Service configuration
+Code generating code
+and more...
 
 
 License
@@ -91,8 +105,7 @@ This project currently calls directly against Azure services.  While Azure never
 traffic is charged.  Further the test results below has executed against a very large dataset.
 
 The test dataset included over 490 Azure production subscriptions. This framework mines security information.  Hence hosting
-this testing on Travis or others.  To protect the test data owners, the testing could only occur on private networks.  Given
-this product is alpha, there are still some bug fixes to be aware of.  The latest build and test result will
+this testing on Travis or others carry with it issues.  To protect the test data owners, the testing could only occur on private networks.  Given this product is alpha, there are still some bug fixes to be aware of.  The latest build and test result will
 be posted here going forward:
 
 https://github.com/robertfischer3/python-mop/blob/master/testingresults/test-16-dec-2019.html
