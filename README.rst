@@ -14,7 +14,7 @@ Welcome to Mop project!
 https://github.com/robertfischer3/python-mop/blob/master/testingresults/test-16-dec-2019.html
 
 
-https://img.shields.io/github/commit-activity/w/robertfischer3/python-mop
+![Github]https://img.shields.io/github/commit-activity/w/robertfischer3/python-mop
 https://github.com/robertfischer3/python-mop/pulse
 
 
@@ -74,9 +74,9 @@ Framework Features
 Nanscent pluggable architectures using Pluggy
 
 .. image:: https://pluggy.readthedocs.io/en/latest/_static/img/plug.png
-    :width: 150px
+    :width: 50px
     :align: left
-    :height: 150px
+    :height: 50px
     :alt: alternate text
 
 Easy data storage and analysis using databases and Alchemy ORM
