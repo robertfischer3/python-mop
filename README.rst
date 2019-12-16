@@ -11,10 +11,11 @@ The Mop Project (alpha)
 Welcome to Mop project!
 
 .. image:: https://img.shields.io/badge/tests-current%20tests-yellow
+https://github.com/robertfischer3/python-mop/blob/master/testingresults/test-16-dec-2019.html
 
 
-[Private Network Testing](https://github.com/robertfischer3/python-mop/blob/master/testingresults/test-16-dec-2019.html)|
-|Commits|![Commits](https://img.shields.io/github/commit-activity/w/robertfischer3/python-mop)|
+..image::https://img.shields.io/github/commit-activity/w/robertfischer3/python-mop
+https://github.com/robertfischer3/python-mop/pulse
 
 
 Why Mop? You need mop to clean up your cloud mess!
