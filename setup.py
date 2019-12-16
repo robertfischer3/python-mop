@@ -17,59 +17,65 @@ from setuptools import setup
 
 def read(*names, **kwargs):
     with io.open(
-        join(dirname(__file__), *names),
-        encoding=kwargs.get('encoding', 'utf8')
+        join(dirname(__file__), *names), encoding=kwargs.get("encoding", "utf8")
     ) as fh:
         return fh.read()
 
 
 setup(
-    name='mop',
+    name="mop",
     use_scm_version={
         "write_to": "src/mop/__init__.py",
         "write_to_template": '__version__ = "{version}"',
         "tag_regex": r"^(?P<prefix>v)?(?P<version>[^\+]+)(?P<suffix>.*)?$",
     },
-    license='MIT',
-    description='A Python library used to compile Azure resource compliance information',
-    long_description='%s\n%s' % (
-        re.compile('^.. start-badges.*^.. end-badges', re.M | re.S).sub('', read('README.rst')),
-        re.sub(':[a-z]+:`~?(.*?)`', r'``\1``', read('CHANGELOG.rst'))
+    license="MIT",
+    description="A Python library used to compile Azure resource compliance information",
+    long_description="%s\n%s"
+    % (
+        re.compile("^.. start-badges.*^.. end-badges", re.M | re.S).sub(
+            "", read("README.rst")
+        ),
+        re.sub(":[a-z]+:`~?(.*?)`", r"``\1``", read("CHANGELOG.rst")),
     ),
-    author='Robert Fischer',
-    author_email='robert@recalcitrant.me',
-    url='https://github.com/robertfischer3/python-mop',
-    packages=find_packages('src'),
-    package_dir={'': 'src'},
-    py_modules=[splitext(basename(path))[0] for path in glob('src/*.py')],
+    author="Robert Fischer",
+    author_email="robert@recalcitrant.me",
+    url="https://github.com/robertfischer3/python-mop",
+    packages=find_packages("src"),
+    package_dir={"": "src"},
+    py_modules=[splitext(basename(path))[0] for path in glob("src/*.py")],
     include_package_data=True,
     zip_safe=False,
     classifiers=[
         # complete classifier list: http://pypi.python.org/pypi?%3Aaction=list_classifiers
-        'Development Status :: 5 - Production/Stable',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
-        'Operating System :: Unix',
-        'Operating System :: POSIX',
-        'Operating System :: Microsoft :: Windows',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: Unix",
+        "Operating System :: POSIX",
+        "Operating System :: Microsoft :: Windows",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         # uncomment if you test on these interpreters:
         # 'Programming Language :: Python :: Implementation :: IronPython',
         # 'Programming Language :: Python :: Implementation :: Jython',
         # 'Programming Language :: Python :: Implementation :: Stackless',
-        'Topic :: Utilities',
-        'Private :: Do Not Upload',
+        "Topic :: Utilities",
+        "Private :: Do Not Upload",
     ],
     project_urls={
-        'Documentation': 'https://python-mop.readthedocs.io/',
-        'Changelog': 'https://python-mop.readthedocs.io/en/latest/changelog.html',
-        'Issue Tracker': 'https://github.com/robertfischer3/python-mop/issues',
+        "Documentation": "https://python-mop.readthedocs.io/",
+        "Changelog": "https://python-mop.readthedocs.io/en/latest/changelog.html",
+        "Issue Tracker": "https://github.com/robertfischer3/python-mop/issues",
     },
-    keywords=['Azure', 'policyinsights', 'policy', 'security'
+    keywords=[
+        "Azure",
+        "policyinsights",
+        "policy",
+        "security"
         # eg: 'keyword1', 'keyword2', 'keyword3',
     ],
-    python_requires='>=3.7.*',
+    python_requires=">=3.7.*",
     install_requires=[
         # eg: 'aspectlib==1.1.1', 'six>=1.7',
         "setuptools_scm>=3.3.1",
@@ -82,19 +88,13 @@ setup(
         "azure",
         "pandas",
         "pyodbc",
-        "sqlalchemy"
+        "sqlalchemy",
     ],
     extras_require={
         # eg:
         #   'rst': ['docutils>=0.11'],
         #   ':python_version=="2.6"': ['argparse'],
     },
-    setup_requires=[
-        'setuptools_scm>=3.3.1', "python-dotenv"
-    ],
-    entry_points={
-        'console_scripts': [
-            'mop = mop.cli:main',
-        ]
-    },
+    setup_requires=["setuptools_scm>=3.3.1", "python-dotenv"],
+    entry_points={"console_scripts": ["mop = mop.cli:main",]},
 )

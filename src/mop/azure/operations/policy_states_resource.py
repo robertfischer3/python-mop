@@ -3,11 +3,14 @@ from configparser import ConfigParser
 from dotenv import load_dotenv
 
 from mop.azure.connections import request_authenticated_session
-from mop.azure.utils.create_configuration import change_dir, OPERATIONSPATH, CONFVARIABLES
+from mop.azure.utils.create_configuration import (
+    change_dir,
+    OPERATIONSPATH,
+    CONFVARIABLES,
+)
 
 
 class PolicyStatesResource:
-
     def __init__(self):
         load_dotenv()
         with change_dir(OPERATIONSPATH):
@@ -20,7 +23,7 @@ class PolicyStatesResource:
         :param resourceId:
         :return: a function
         """
-        api_endpoint = self.config['AZURESDK']['policystatessummarizeforresource']
+        api_endpoint = self.config["AZURESDK"]["policystatessummarizeforresource"]
         api_endpoint = api_endpoint.format(resourceId=resourceId)
 
         with request_authenticated_session() as req:

@@ -1,4 +1,3 @@
-
 from mop.cli import main
 
 
