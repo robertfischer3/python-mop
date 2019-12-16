@@ -23,23 +23,23 @@ The Mop Project (alpha)
     :target: https://readthedocs.org/projects/python-mop
     :alt: Documentation Status
 
-.. |travis| image:: https://travis-ci.com/robertfischer3/python-mop.svg?token=GfKWzWQRa9YAeNYM2ptG&branch=master
-    :alt: Travis-CI Build Status
-    :target: https://travis-ci.com/robertfischer3/python-mop.svg?token=GfKWzWQRa9YAeNYM2ptG&branch=master
+.. |tests| image::https://img.shields.io/badge/tests-current%20tests-yellow
+    :target:https://github.com/robertfischer3/python-mop/blob/master/testingresults/test-16-dec-2019.html
 
 .. |codeclimate| image:: https://codeclimate.com/github/robertfischer3/python-mop/badges/gpa.svg
    :target: https://codeclimate.com/github/robertfischer3/python-mop
    :alt: CodeClimate Quality Status
 
-.. |commits-since| image:: https://img.shields.io/github/commits-since/robertfischer3/python-mop/v0.0.1.svg
+.. |commits-since| image:: https://img.shields.io/github/commit-activity/w/robertfischer3/python-mop
     :alt: Commits since latest release
-    :target: https://github.com/robertfischer3/python-mop/compare/v0.0.1...master
+    :target: https://img.shields.io/github/commit-activity/w/robertfischer3/python-mop
 
 
 
 .. end-badges
 
 Welcome to Mop project!
+
 
 Why Mop? You need mop to clean up your cloud mess!
 
