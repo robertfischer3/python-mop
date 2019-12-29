@@ -3,7 +3,7 @@ import os
 import unittest
 from configparser import ConfigParser
 from dotenv import load_dotenv
-
+from jmespath import search
 from mop.azure.connections import Connections
 from mop.azure.resources.subscriptions import Subscriptions
 from mop.azure.utils.create_configuration import (
@@ -26,13 +26,18 @@ class TestResourcesSubscriptions(unittest.TestCase):
                 config = ConfigParser()
                 config.read(TESTVARIABLES)
 
+    def test_list_subscriptions_api(self):
+        execute = Subscriptions().list_subscriptions()
+        results = execute()
+        print(type(results))
+
     def test_listsubscriptions(self):
         """
 
         :return:
         """
         credentials = Connections().get_authenticated_client()
-        results = Subscriptions(credentials).subscription_list_displayname_id()
+        results = Subscriptions().subscription_list_displayname_id()
         self.assertGreater(len(results), 0)
 
         for i in results:

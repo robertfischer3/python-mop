@@ -1,20 +1,14 @@
-from mop.azure.operations.policy_definitions import (
-    management_grp_policy_list,
+from mop.azure.resources.policy_definitions import (
     management_grp_policy_list_as_df,
 )
 from mop.azure.operations.policy_insights import PolicyInsights
 from mop.azure.resources.subscriptions import Subscriptions
-from mop.azure.resources import subscriptions
-from configparser import ConfigParser
 
 from dotenv import load_dotenv
 import pandas as pd
 
 from azure.mgmt.policyinsights.models.query_failure_py3 import QueryFailureException
-import os
 
-import adal
-import requests
 from configparser import ConfigParser
 from mop.azure.utils.create_configuration import CONFVARIABLES, OPERATIONSPATH
 from mop.azure.utils.create_configuration import change_dir
@@ -80,9 +74,7 @@ class EvaluatePolicies:
         :param management_grp:
         :return: pandas dataframe
         """
-        subscriptions = Subscriptions(
-            self.credentials
-        ).list_management_grp_subcriptions(management_grp=management_grp)
+        subscriptions = Subscriptions().list_management_grp_subcriptions(management_grp=management_grp)
         aggregate_df = None
 
         data_frame_list = list()
@@ -114,29 +106,17 @@ class EvaluatePolicies:
             management_grp
         )
 
-        print(df_management_grp_insights.columns)
-
         policy_definitions = management_grp_policy_list_as_df(
             self.credentials,
             management_grp=management_grp,
             subscription_id_param=subscription,
         )
 
-        subscription_info = Subscriptions(
-            self.credentials
-        ).list_management_grp_subcriptions(management_grp=management_grp)
-
-        tmp_merge_step1 = pd.merge(
+        df_management_grp_results = pd.merge(
             df_management_grp_insights,
             policy_definitions,
             on="policy_definition_name",
             how="left",
         )
-
-        tmp_merge_step2 = pd.merge(
-            tmp_merge_step1, subscription_info, on="subscription_id", how="left"
-        )
-
-        df_management_grp_results = tmp_merge_step2
 
         return df_management_grp_results

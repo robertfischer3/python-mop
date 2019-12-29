@@ -16,6 +16,10 @@ class DatbasePlugins(object):
         """Datbase creation hook"""
 
     @dbhookspec
+    def get_db_engine(self, driver, server, database, password, user):
+        """Get database engine hook"""
+
+    @dbhookspec
     def delete_data(self, server, database, user, password, driver):
         """Datbase deletion hook"""
 
@@ -25,7 +29,8 @@ class SQLServerDatabase(object):
         This class is an implementation of the dbhookspec
     """
 
-    def get_db_engine(self, database, driver, password, server, user):
+    @dbhookimpl
+    def get_db_engine(self, driver, server, database, password, user):
         """
          Creates SQL Datase engine
         :param database:
@@ -109,6 +114,15 @@ class SQLServerDatabase(object):
             Column("noncompliant", Integer),
         )
 
+        policydefinition = Table(
+            "policydefinition",
+            m,
+            Column("id", Integer, primary_key=True),
+            Column("subscription_id", String(36)),
+            Column("policy_defintion_name", String(36)),
+            Column("policy_display_name", String),
+            Column("policy_description", String)
+        )
         m.create_all(engine)
 
         return m.tables

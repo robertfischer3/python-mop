@@ -37,6 +37,15 @@ class ScourPolicyStatesOperations:
         with request_authenticated_session() as req:
             return req.post(api_endpoint).json
 
+    def policy_states_summarize_for_resourcegroup(self, subscriptionId):
+        api_endpoint = self.config["AZURESDK"]["policystatessummarizeforresourcegroup"]
+        api_endpoint = api_endpoint.format(subscriptionId=subscriptionId)
+
+        with request_authenticated_session as req:
+            summarized_resource_group_function = req.post(api_endpoint).json
+
+        return summarized_resource_group_function
+
     def list_operations(self, subscriptionId):
         api_endpoint = self.config["AZURESDK"]["PolicyDefinitionsListBuiltin"]
         api_endpoint = api_endpoint.format(subscriptionId=subscriptionId)
@@ -76,6 +85,19 @@ class ScourPolicyStatesOperations:
             policy_def_builtin = req.post(api_endpoint).json
 
         return policy_def_builtin
+
+    def policy_states_summarize_for_subscription_query(self):
+        """
+
+        :param subscription:
+        :return:
+        """
+        api_endpoint = self.config["AZURESDK"]["policystatessummarizeforsubscriptionquery"]
+        with request_authenticated_session() as req:
+            policy_states_summary_subscription = req.post(api_endpoint).json
+
+        return policy_states_summary_subscription
+
 
     def policy_states_summarize_for_subscription(self, subscription):
         """

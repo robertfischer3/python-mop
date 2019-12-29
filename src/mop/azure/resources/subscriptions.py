@@ -1,3 +1,5 @@
+from configparser import ConfigParser
+
 from azure.mgmt.subscription import SubscriptionClient
 from azure.mgmt.managementgroups import ManagementGroupsAPI
 import pandas as pd
@@ -11,29 +13,28 @@ from azure.mgmt.resource.policy.v2018_03_01.models.error_response_py3 import (
 from dotenv import load_dotenv
 import os
 
-from mop.azure.connections import request_authenticated_session
+from mop.azure.connections import request_authenticated_session, Connections
+from mop.azure.utils.create_configuration import change_dir, OPERATIONSPATH, CONFVARIABLES
 
 
 class Subscriptions:
-    def __init__(self, credentials):
+    def __init__(self):
         load_dotenv()
-        self.credentials = credentials
+        self.credentials = Connections().get_authenticated_client()
+        with change_dir(OPERATIONSPATH):
+            self.config = ConfigParser()
+            self.config.read(CONFVARIABLES)
 
-    def list_subscriptions_displaynames_id(self):
+    def list_subscriptions(self):
         """
 
         :return:
         """
-        tenant_id = os.environ["TENANT"]
+        api_endpoint = self.config["AZURESDK"]["subscriptions"]
         with request_authenticated_session() as req:
-            endpoint = (
-                "https://management.azure.com/subscriptions/?api-version=2015-01-01"
-            )
+            subscriptions_function = req.post(api_endpoint).json
 
-        headers = {"Authorization": "Bearer " + access_token}
-        json_output = requests.get(endpoint, headers=headers).json()
-        for sub in json_output["value"]:
-            print(sub["displayName"] + ": " + sub["subscriptionId"])
+        return subscriptions_function
 
     def subscription_list_displayname_id(self):
         """
@@ -50,7 +51,7 @@ class Subscriptions:
         ]
         return subscription_list
 
-    def get_subscription(self, creds, subscription_id):
+    def get_subscription(self, subscription_id):
         """
         Gets detailed information on an individual subscription
         :rtype: object
@@ -93,7 +94,7 @@ class Subscriptions:
             ]
             for subscriptions in mngrp_subscriptions
             if "/providers/Microsoft.Management/managementGroups"
-            not in subscriptions.type
+               not in subscriptions.type
         ]
         df = pd.DataFrame(
             data=subscriptions_limited, columns=self.limited_subscription_columns()
@@ -104,6 +105,7 @@ class Subscriptions:
 
     def list_management_grp_subscriptions_list(self, management_grp, subscription_id):
         """
+        This method create a policies within a management group per subscription
 
         :param management_grp:
         :param subscription_id:

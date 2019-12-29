@@ -1,7 +1,7 @@
 from configparser import ConfigParser
 
-from azure.mgmt.resource.policy import PolicyClient
 import pandas as pd
+from azure.mgmt.resource.policy import PolicyClient
 from dotenv import load_dotenv
 
 from mop.azure.connections import request_authenticated_session
@@ -34,6 +34,15 @@ class PolicyDefinitions:
 
         with request_authenticated_session() as req:
             return req.post(api_endpoint).json()
+
+    def policy_definitions_by_subscription(self, subscriptionId):
+        api_endpoint = self.config["AZURESDK"]["policydefintionsbysubscription"]
+        api_endpoint = api_endpoint.format(subscriptionId=subscriptionId)
+
+        with request_authenticated_session() as req:
+            policy_definitions_function = req.get(api_endpoint).json
+
+        return policy_definitions_function
 
 
 def get_policydefinitions_management_grp(creds, base_subscription, management_grp):
@@ -109,6 +118,13 @@ def management_grp_policy_list(creds, subscription_id_param, management_grp):
     ]
 
     return policy_defs_limited
+
+
+def get_subscription_policies(subscription_id, credentials):
+    policy_client = PolicyClient(credentials=credentials, subscription_id=subscription_id, base_url=None)
+    policy_client.policy_definitions()
+    pass
+    # TODO complete this later
 
 
 def management_grp_policy_list_as_df(creds, subscription_id_param, management_grp):

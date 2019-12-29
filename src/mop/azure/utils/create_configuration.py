@@ -51,6 +51,11 @@ def create_baseline_configuration(generate_test=True):
         "VirtualNetworksList": "https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/virtualNetworks?api-version=2019-09-01",
         "VirtualNetworksListAll": "https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Network/virtualNetworks?api-version=2019-09-01",
         "VirtualNetworksListUsage": "https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/virtualNetworks/{virtualNetworkName}/usages?api-version=2019-09-01",
+        "PolicyStatesSummarizeForSubscriptionQuery":"https://management.azure.com/subscriptions/82746ea2-9f97-4313-b21a-e9bde3a0a241/providers/Microsoft.PolicyInsights/policyStates/latest/queryResults?api-version=2019-10-01&$from=2019-12-17 20:12:48Z&$to=2019-12-18 20:12:48Z and PolicyAssignmentId eq '/providers/microsoft.management/managementgroups/12a3af23-a769-4654-847f-958f3d479f4a/providers/microsoft.authorization/policyassignments/95b344047fdf442fa4172383' and PolicyDefinitionId eq '/providers/microsoft.authorization/policydefinitions/c8343d2f-fdc9-4a97-b76f-fc71d1163bfc' and PolicyDefinitionReferenceId eq 'sqlserveradvanceddatasecurityemailadminsmonitoring",
+        "PolicyStatesSummarizeForResourceGroup":"https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01",
+        "resourcegroupslist":"https://management.azure.com/subscriptions/{subscriptionId}/resourcegroups?api-version=2019-08-01",
+        "resourcelist":"https://management.azure.com/subscriptions/{subscriptionId}/resources?api-version=2019-08-01",
+        "policydefintionsbysubscription":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions?api-version=2019-09-01"
     }
 
     with atomic_write(CONFVARIABLES, "w") as configfile:
