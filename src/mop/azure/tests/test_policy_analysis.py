@@ -23,7 +23,11 @@ class TestAnalysisCompileCompliance(unittest.TestCase):
             self.config.read(TESTVARIABLES)
 
     def test_summarize_subscriptions(self):
-        subscription_id = self.config["DEFAULT"]["subscription_id"]
+
+        management_grp = self.config["DEFAULT"]["management_grp_id"]
+        tenant_id = self.config['DEFAULT']['tenant_id']
+
         summarize = SummarizeSubscription()
-        df = summarize.summarize_subscriptions(subscription_id)
-        print(df)
+        summarize.summarize_subscriptions(management_grp)
+
+

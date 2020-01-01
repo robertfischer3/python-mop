@@ -1,7 +1,7 @@
 import pluggy
 
 from mop.azure.utils.create_sqldb import DatbasePlugins, SQLServerDatabase
-
+import os
 
 def main():
     # The driver often needs to be obtained from the database publisher
@@ -14,7 +14,7 @@ def main():
     # Do not use SA
     user = "SA"
     # Do not store the password in this file
-    password = "<add your super security password>"
+    password = os.environ["DATABASEPWD"]
 
     pm = pluggy.PluginManager("Analysis")
     pm.add_hookspecs(DatbasePlugins)

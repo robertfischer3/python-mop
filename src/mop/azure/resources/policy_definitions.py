@@ -44,6 +44,14 @@ class PolicyDefinitions:
 
         return policy_definitions_function
 
+    def policy_definitions_list_by_management_group(self, managementGroupId):
+        api_endpoint = self.config['AZURESDK']['policydefinitionslistbymanagementgroup']
+        api_endpoint = api_endpoint.format(managementGroupId=managementGroupId)
+
+        with request_authenticated_session() as req:
+            policy_definitions_function = req.get(api_endpoint).json
+
+        return policy_definitions_function
 
 def get_policydefinitions_management_grp(creds, base_subscription, management_grp):
     """

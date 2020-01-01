@@ -43,12 +43,6 @@ class BaseDB:
         # reflect the tables
         Base.prepare(engine, reflect=True)
 
-        # mapped classes are now created with names by default
-        # matching that of the table name.
-        self.factcompliance = Base.classes.factcompliance
-        self.noncompliant = Base.classes.noncompliant
-
-        return self.factcompliance, self.noncompliant
-
+        return Base
 
 

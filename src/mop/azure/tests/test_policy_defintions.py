@@ -26,7 +26,7 @@ class TestPolicyDefinitionsCase(unittest.TestCase):
         # Do not use SA in production
         user = "SA"
 
-    def test_something(self):
+    def test_policy_definitions_by_subscription(self):
         subscriptionId = self.config['DEFAULT']['subscription_id']
         policy_definitions = PolicyDefinitions()
         defintion_list_function = policy_definitions.policy_definitions_by_subscription(subscriptionId=subscriptionId)
@@ -43,6 +43,29 @@ class TestPolicyDefinitionsCase(unittest.TestCase):
             if policy['properties']['description']:
                 print(policy['properties']['description'])
 
+    def test_policy_definitions_list_by_management_group(self):
+
+        managementGroupId = self.config['DEFAULT']['management_grp_id']
+        search_category = 'Nestle Security'
+
+
+        policy_definitions = PolicyDefinitions()
+
+        defintion_list_function = policy_definitions.policy_definitions_list_by_management_group(managementGroupId)
+        results = defintion_list_function()
+
+        policies = results['value']
+        for policy in policies:
+            policy_type = policy['properties']['policyType']
+            if policy_type not in ['BuiltIn', 'Static']:
+                policy_name = policy['name']
+                policy_category = ""
+                if 'category' in policy['properties']['metadata']:
+                    policy_category = ['properties']['metadata']['category']
+
+                policy_display_name = policy['properties']['displayName']
+                if policy['properties']['description']:
+                    policy_description = policy['properties']['description']
 
 
         self.assertEqual(True, True)

@@ -46,12 +46,13 @@ class TestCaseUtils(unittest.TestCase):
                 self.assertEqual(f.read(), "roger that")
 
     def test_directory_context_manager(self):
+        """Test the creation of the app.config.ini file and the test.app.config.ini"""
         subscription_id = os.environ["SUB"]
         tenant_id = os.environ["TENANT"]
         with change_dir(OPERATIONSPATH):
             create_baseline_configuration()
             self.assertEqual(os.path.isfile("app.config.ini"), True)
-
+            self.assertEqual(os.path.isfile("test.app.config.ini"), True)
 
 class TestConfigParser(unittest.TestCase):
     def setUp(self) -> None:

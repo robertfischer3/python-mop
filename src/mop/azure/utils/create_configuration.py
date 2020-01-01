@@ -33,7 +33,7 @@ def create_baseline_configuration(generate_test=True):
     }
     config["SQLSERVER"] = {
         "server":"tcp:172.17.0.1",
-        "database":"TestDB",
+        "database":"TestDB2",
         "username": "SA",
         "db_driver":"{ODBC Driver 17 for SQL Server}",
         "dialect":"mssql"
@@ -55,7 +55,8 @@ def create_baseline_configuration(generate_test=True):
         "PolicyStatesSummarizeForResourceGroup":"https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01",
         "resourcegroupslist":"https://management.azure.com/subscriptions/{subscriptionId}/resourcegroups?api-version=2019-08-01",
         "resourcelist":"https://management.azure.com/subscriptions/{subscriptionId}/resources?api-version=2019-08-01",
-        "policydefintionsbysubscription":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions?api-version=2019-09-01"
+        "policydefintionsbysubscription":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions?api-version=2019-09-01",
+        "policydefinitionslistbymanagementgroup":"https://management.azure.com/providers/Microsoft.Management/managementgroups/{managementGroupId}/providers/Microsoft.Authorization/policyDefinitions?api-version=2019-09-01"
     }
 
     with atomic_write(CONFVARIABLES, "w") as configfile:

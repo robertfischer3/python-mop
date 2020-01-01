@@ -1,6 +1,7 @@
 from configparser import ConfigParser
 
 from azure.mgmt.subscription import SubscriptionClient
+from azure.mgmt.subscription.operations import SubscriptionsOperations
 from azure.mgmt.managementgroups import ManagementGroupsAPI
 import pandas as pd
 from azure.mgmt.resource.policy import PolicyClient
@@ -21,6 +22,8 @@ class Subscriptions:
     def __init__(self):
         load_dotenv()
         self.credentials = Connections().get_authenticated_client()
+        self.subscription_client = SubscriptionClient(self.credentials, base_url=None)
+
         with change_dir(OPERATIONSPATH):
             self.config = ConfigParser()
             self.config.read(CONFVARIABLES)
@@ -30,11 +33,14 @@ class Subscriptions:
 
         :return:
         """
-        api_endpoint = self.config["AZURESDK"]["subscriptions"]
-        with request_authenticated_session() as req:
-            subscriptions_function = req.post(api_endpoint).json
+        subscriptions = self.subscription_client.subscription_operations.list()
 
-        return subscriptions_function
+        return subscriptions
+
+    def get_subscription(self, subscription_id):
+
+        subscription = self.subscription_client.subscriptions.get(subscription_id)
+        return subscription
 
     def subscription_list_displayname_id(self):
         """
@@ -103,9 +109,11 @@ class Subscriptions:
 
         return df
 
-    def list_management_grp_subscriptions_list(self, management_grp, subscription_id):
+    def create_management_grp_policy_assignments(self, management_grp, subscription_id):
         """
         This method create a policies within a management group per subscription
+        The subscription id in required to make a query against the Python SDK when querying a management group.
+        Looking for alternatives.
 
         :param management_grp:
         :param subscription_id:
