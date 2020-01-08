@@ -1,6 +1,9 @@
 from configparser import ConfigParser
 from contextlib import contextmanager
 import os
+
+from dotenv import load_dotenv
+
 from mop.azure.utils.atomic_writes import atomic_write
 
 CONFVARIABLES = "app.config.ini"
@@ -24,7 +27,7 @@ def create_baseline_configuration(generate_test=True):
         The method creates the api configuration file for Azure API calls.  As Microsoft changes
     :return:
     """
-
+    load_dotenv()
     config = ConfigParser()
     config["DEFAULT"] = {
         "subscription_id": os.environ["SUB"],
@@ -33,7 +36,7 @@ def create_baseline_configuration(generate_test=True):
     }
     config["SQLSERVER"] = {
         "server":"tcp:172.17.0.1",
-        "database":"TestDB",
+        "database":"TestDB2",
         "username": "SA",
         "db_driver":"{ODBC Driver 17 for SQL Server}",
         "dialect":"mssql"
@@ -51,6 +54,16 @@ def create_baseline_configuration(generate_test=True):
         "VirtualNetworksList": "https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/virtualNetworks?api-version=2019-09-01",
         "VirtualNetworksListAll": "https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Network/virtualNetworks?api-version=2019-09-01",
         "VirtualNetworksListUsage": "https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/virtualNetworks/{virtualNetworkName}/usages?api-version=2019-09-01",
+        "PolicyStatesSummarizeForSubscriptionQuery":"https://management.azure.com/subscriptions/82746ea2-9f97-4313-b21a-e9bde3a0a241/providers/Microsoft.PolicyInsights/policyStates/latest/queryResults?api-version=2019-10-01&$from=2019-12-17 20:12:48Z&$to=2019-12-18 20:12:48Z and PolicyAssignmentId eq '/providers/microsoft.management/managementgroups/12a3af23-a769-4654-847f-958f3d479f4a/providers/microsoft.authorization/policyassignments/95b344047fdf442fa4172383' and PolicyDefinitionId eq '/providers/microsoft.authorization/policydefinitions/c8343d2f-fdc9-4a97-b76f-fc71d1163bfc' and PolicyDefinitionReferenceId eq 'sqlserveradvanceddatasecurityemailadminsmonitoring",
+        "PolicyStatesSummarizeForResourceGroup":"https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01",
+        "resourcegroupslist":"https://management.azure.com/subscriptions/{subscriptionId}/resourcegroups?api-version=2019-08-01",
+        "resourcelist":"https://management.azure.com/subscriptions/{subscriptionId}/resources?api-version=2019-08-01",
+        "policy_defintions_by_subscription":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions?api-version=2019-09-01",
+        "policystateslistqueryresultsformanagementgroup": 'https://management.azure.com/providers/Microsoft.Management/managementGroups/{managementGroupName}/providers/Microsoft.PolicyInsights/policyStates/{policyStatesResource}/queryResults?api-version=2019-10-01',
+        "policy_states_list_query_results_for_policy_definitions":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}/providers/Microsoft.PolicyInsights/policyStates/{policyStatesResource}/queryResults?api-version=2019-10-01",
+        "policy_definitions_list_by_management_group":"https://management.azure.com/providers/Microsoft.Management/managementgroups/{managementGroupId}/providers/Microsoft.Authorization/policyDefinitions?api-version=2019-09-01",
+        "policy_definitions_get":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}?api-version=2019-09-01",
+        "get_policy_definition_by_name":"https://management.azure.com/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}?api-version=2019-09-01"
     }
 
     with atomic_write(CONFVARIABLES, "w") as configfile:
@@ -60,6 +73,8 @@ def create_baseline_configuration(generate_test=True):
         with atomic_write(TESTVARIABLES, "w") as testconfigfile:
             config.write(testconfigfile)
 
+def main():
+    create_baseline_configuration()
 
 if __name__ == "__main__":
     main()

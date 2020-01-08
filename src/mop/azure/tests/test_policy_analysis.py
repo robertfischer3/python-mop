@@ -15,7 +15,7 @@ from mop.azure.utils.create_configuration import (
 class TestAnalysisCompileCompliance(unittest.TestCase):
     def setUp(self) -> None:
         load_dotenv()
-        logging.basicConfig(level=logging.DEBUG)
+        logging.basicConfig(level=logging.WARN)
         logging.debug("Current working directory {}".format(os.getcwd()))
         with change_dir(OPERATIONSPATH):
             logging.debug("Current change_dir working directory {}".format(os.getcwd()))
@@ -23,7 +23,15 @@ class TestAnalysisCompileCompliance(unittest.TestCase):
             self.config.read(TESTVARIABLES)
 
     def test_summarize_subscriptions(self):
-        subscription_id = self.config["DEFAULT"]["subscription_id"]
+
+        management_grp = self.config["DEFAULT"]["management_grp_id"]
+        tenant_id = self.config['DEFAULT']['tenant_id']
+
         summarize = SummarizeSubscription()
-        df = summarize.summarize_subscriptions(subscription_id)
-        print(df)
+        summarize.summarize_subscriptions(management_grp)
+
+
+    def test_summarize_query_results_for_policy_definitions(self):
+
+        summarize = SummarizeSubscription()
+        summarize.summarize_query_results_for_policy_definitions()

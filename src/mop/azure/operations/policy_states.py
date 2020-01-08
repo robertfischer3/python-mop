@@ -37,6 +37,38 @@ class ScourPolicyStatesOperations:
         with request_authenticated_session() as req:
             return req.post(api_endpoint).json
 
+    def policy_states_summarize_for_resourcegroup(self, subscriptionId):
+        api_endpoint = self.config["AZURESDK"]["policystatessummarizeforresourcegroup"]
+        api_endpoint = api_endpoint.format(subscriptionId=subscriptionId)
+
+        with request_authenticated_session() as req:
+            summarized_resource_group_function = req.post(api_endpoint).json
+
+        return summarized_resource_group_function
+
+    def policy_states_list_query_results_for_policy_definitions(self, subscription_id, policy_definition_name,
+                                                                authenticated_session = None,
+                                                                policy_states_resource='latest'):
+        try:
+
+            api_endpoint = self.config["AZURESDK"]["policy_states_list_query_results_for_policy_definitions"]
+            api_endpoint = api_endpoint.format(subscriptionId=subscription_id, policyDefinitionName=policy_definition_name,
+                                               policyStatesResource=policy_states_resource)
+
+            query_results_for_policy_definitions_function = None
+
+            if authenticated_session:
+                query_results_for_policy_definitions_function = authenticated_session.post(api_endpoint).json
+            else:
+                with request_authenticated_session() as req:
+                    query_results_for_policy_definitions_function = req.post(api_endpoint).json
+
+        except UnboundLocalError:
+            pass
+        finally:
+            return query_results_for_policy_definitions_function
+
+
     def list_operations(self, subscriptionId):
         api_endpoint = self.config["AZURESDK"]["PolicyDefinitionsListBuiltin"]
         api_endpoint = api_endpoint.format(subscriptionId=subscriptionId)
@@ -76,6 +108,28 @@ class ScourPolicyStatesOperations:
             policy_def_builtin = req.post(api_endpoint).json
 
         return policy_def_builtin
+
+    def policy_states_summarize_for_subscription_query(self):
+        """
+
+        :param subscription:
+        :return:
+        """
+        api_endpoint = self.config["AZURESDK"]["policystatessummarizeforsubscriptionquery"]
+        with request_authenticated_session() as req:
+            policy_states_summary_subscription = req.post(api_endpoint).json
+
+        return policy_states_summary_subscription
+
+    def policy_states_list_query_results_for_management_group(self, management_grp, policyStatesResource='latest'):
+
+        api_endpoint = self.config["AZURESDK"]["policystateslistqueryresultsformanagementgroup"]
+        api_endpoint = api_endpoint.format(managementGroupName=management_grp,
+                                           policyStatesResource=policyStatesResource)
+        with request_authenticated_session() as req:
+            policy_states_summary_subscription = req.post(api_endpoint).json
+
+        return policy_states_summary_subscription
 
     def policy_states_summarize_for_subscription(self, subscription):
         """

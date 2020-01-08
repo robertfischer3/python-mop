@@ -8,6 +8,8 @@ verify_ssl = true
 [packages]
 mop = {editable = true,path = "."}
 azure = "*"
+jmespath = "*"
+openpyxl = "*"
 
 [requires]
 python_version = "3.7"

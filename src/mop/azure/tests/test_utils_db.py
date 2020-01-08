@@ -1,75 +1,142 @@
 import os
 import unittest
+from configparser import ConfigParser
 
 import pluggy
 import pyodbc
 from dotenv import load_dotenv
+import pandas as pd
+import uuid
 
+from mop.azure.analysis.compile_compliance import subscription_policy_compliance
+from mop.azure.utils.create_configuration import change_dir, OPERATIONSPATH, TESTVARIABLES
 from mop.azure.utils.create_sqldb import SQLServerDatabase, DatbasePlugins
+from mop.azure.resources.subscriptions import Subscriptions
 from mop.db.basedb import BaseDB
 
 
-class MyTestCase(unittest.TestCase):
+class TestUtilDb(unittest.TestCase):
     def setUp(self) -> None:
         load_dotenv()
-
+        with change_dir(OPERATIONSPATH):
+            self.config = ConfigParser()
+            self.config.read(TESTVARIABLES)
+        # The driver often needs to be obtained from the database publisher
+        self.driver = "{ODBC Driver 17 for SQL Server}"
+        # Server is the IP address or DNS of the database server
+        self.server = "172.17.0.1"
+        # Can be any database name, as long as you are consistent
+        self.database = "TestDB2"
         # Never place passwords in code.  Your just asking for trouble otherwise
         self.password = os.environ["DATABASEPWD"]
+        # Do not use SA in production
+        self.user = "SA"
 
     def test_create_database(self):
         # Testing the pluggy architecture and database creation code
-
-        # The driver often needs to be obtained from the database publisher
-        driver = "{ODBC Driver 17 for SQL Server}"
-        # Server is the IP address or DNS of the database server
-        server = "172.17.0.1"
-        # Can be any database name, as long as you are consistent
-        database = "TestDB2"
-
-        # Do not use SA
-        user = "SA"
-        # Do not store the password in this file
-        password = self.password
 
         pm = pluggy.PluginManager("Analysis")
         pm.add_hookspecs(DatbasePlugins)
         pm.register(SQLServerDatabase())
 
         tables = pm.hook.create_database(
-            server=server,
-            database=database,
-            user=user,
-            password=password,
-            driver=driver,
+            server=self.server,
+            database=self.database,
+            user=self.user,
+            password=self.password,
+            driver=self.driver,
         )
 
         self.assertIsNotNone(tables)
 
+    def test_get_database_engine(self):
+        pm = pluggy.PluginManager("Analysis")
+        pm.add_hookspecs(DatbasePlugins)
+        pm.register(SQLServerDatabase())
+        engine = pm.hook.get_db_engine(
+            driver=self.driver,
+            server=self.server,
+            database=self.database,
+            user=self.user,
+            password=self.password,
+        )
+        self.assertIsNotNone(engine)
+
+    def test_pandas_dataframe_to_sql(self):
+
+        pm = pluggy.PluginManager("Analysis")
+        pm.add_hookspecs(DatbasePlugins)
+        pm.register(SQLServerDatabase())
+        engine_list = pm.hook.get_db_engine(
+            driver=self.driver,
+            server=self.server,
+            database=self.database,
+            user=self.user,
+            password=self.password,
+        )
+        engine = engine_list[0]
+        # Create dataframe
+        data = pd.DataFrame({
+            'book_id': [uuid.uuid1(), uuid.uuid1(), uuid.uuid1()],
+            'title': ['Python Programming for Freaks', 'Learn Something', 'Data Science for the Masses'],
+            'price': [32, 22, 29]
+        })
+
+        data.to_sql('book_details', con=engine, if_exists='append', chunksize=1000)
+
+    def test_pandas_dataframe_subscriptions_to_sql(self):
+        pm = pluggy.PluginManager("Analysis")
+        pm.add_hookspecs(DatbasePlugins)
+        pm.register(SQLServerDatabase())
+        engine_list = pm.hook.get_db_engine(
+            driver=self.driver,
+            server=self.server,
+            database=self.database,
+            user=self.user,
+            password=self.password,
+        )
+        engine = engine_list[0]
+        management_grp = os.environ["MANGRP"]
+
+        subscriptions = Subscriptions().list_management_grp_subcriptions(management_grp=management_grp)
+        subscriptions.reset_index(inplace = True)
+        subscriptions.to_sql('subscriptions', index=False,  con=engine, if_exists='append', chunksize=1000)
+
+    def test_pandas_dataframe_policy_states_summarize_for_subscription(self):
+
+        pm = pluggy.PluginManager("Analysis")
+        pm.add_hookspecs(DatbasePlugins)
+        pm.register(SQLServerDatabase())
+        engine_list = pm.hook.get_db_engine(
+            driver=self.driver,
+            server=self.server,
+            database=self.database,
+            user=self.user,
+            password=self.password,
+        )
+
+        subscriptionId = self.config["DEFAULT"]["subscription_id"]
+        df = subscription_policy_compliance(subscriptionId)
+
+        self.assertTrue(len(df.index)>0)
+
+        engine = engine_list[0]
+
+        df.to_sql('test_policy_compliance_ratios', index=False, con=engine, if_exists='append', chunksize=1000)
+
     def test_delete_database(self):
         # Testing the pluggy architecture and database creation code
-
-        # The driver often needs to be obtained from the database publisher
-        driver = "{ODBC Driver 17 for SQL Server}"
-        # Server is the IP address or DNS of the database server
-        server = "172.17.0.1"
-        # Can be any database name, as long as you are consistent
-        database = "TestDB2"
-
-        # Do not use SA
-        user = "SA"
-        # Do not store the password in this file
-        password = self.password
 
         pm = pluggy.PluginManager("Analysis")
         pm.add_hookspecs(DatbasePlugins)
         pm.register(SQLServerDatabase())
 
         result = pm.hook.delete_database(
-            server=server,
-            database=database,
-            user=user,
-            password=password,
-            driver=driver,
+            server=self.server,
+            database=self.database,
+            user=self.user,
+            password=self.password,
+            driver=self.driver,
         )
 
         self.assertEqual(result, [0])
@@ -80,7 +147,7 @@ class MyTestCase(unittest.TestCase):
         :return:
         """
         server = "tcp:172.17.0.1"
-        database = "TestDB"
+        database = "TestDB2"
         username = "SA"
         password = self.password
         db_driver = "{ODBC Driver 17 for SQL Server}"
@@ -98,7 +165,12 @@ class MyTestCase(unittest.TestCase):
         engine = baseDb.get_db_engine()
         self.assertIsNotNone(engine)
 
-        baseDb.get_db_model(engine=engine)
+        factcompliance, noncompliance, subscriptions  = baseDb.get_db_model(engine=engine)
+
+        if subscriptions:
+
+            for subscription in subscriptions:
+                print(subscription.subscription_id)
 
     def test_something(self):
         # Testing pyodbc
@@ -106,7 +178,7 @@ class MyTestCase(unittest.TestCase):
         # server = 'localhost\sqlexpress' # for a named instance
         # server = 'myserver,port' # to specify an alternate port
         server = "tcp:172.17.0.1"
-        database = "TestDB"
+        database = "TestDB2"
         username = "SA"
         password = self.password
         cnxn = pyodbc.connect(

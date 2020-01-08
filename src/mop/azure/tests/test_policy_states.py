@@ -2,9 +2,8 @@ import os
 import unittest
 from configparser import ConfigParser
 
-import pandas as pd
+import pluggy
 from dotenv import load_dotenv
-import json
 
 from mop.azure.analysis.policy_analysis import EvaluatePolicies
 from mop.azure.connections import Connections
@@ -14,6 +13,7 @@ from mop.azure.utils.create_configuration import (
     change_dir,
     OPERATIONSPATH,
 )
+from mop.azure.utils.create_sqldb import DatbasePlugins, SQLServerDatabase
 
 
 class TestOperationsPolicyStates(unittest.TestCase):
@@ -22,15 +22,25 @@ class TestOperationsPolicyStates(unittest.TestCase):
         with change_dir(OPERATIONSPATH):
             self.config = ConfigParser()
             self.config.read(TESTVARIABLES)
+            # The driver often needs to be obtained from the database publisher
+            self.driver = "{ODBC Driver 17 for SQL Server}"
+            # Server is the IP address or DNS of the database server
+            self.server = "172.17.0.1"
+            # Can be any database name, as long as you are consistent
+            self.database = "TestDB2"
+            # Never place passwords in code.  Your just asking for trouble otherwise
+            self.password = os.environ["DATABASEPWD"]
+            # Do not use SA in production
+            self.user = "SA"
 
-    def test_policy_states_summarize_for_subscription(self):
+    def test_policy_states_summarize_for_subscription_sdk(self):
         """
         Testing the policy_states_summarize_for_subscription methods on the class ScourPolicyStatesOperations
         :return:
         """
-        subscription = self.config["DEFAULT"]["subscription"]
+        subscriptionId = self.config["DEFAULT"]["subscription_id"]
         scour_policy = ScourPolicyStatesOperations()
-        execute = scour_policy.policy_states_summarize_for_subscription(subscription)
+        execute = scour_policy.policy_states_summarize_for_subscription(subscriptionId)
         # Execute returns a method the can be executed anywhere more than once
         result = execute()
         self.assertIsNotNone(result)
@@ -39,7 +49,34 @@ class TestOperationsPolicyStates(unittest.TestCase):
         self.assertIsNotNone(result2)
 
         values = result["value"]
+
         self.assertIs(type(values), list)
+
+    def test_policy_states_summarize_for_policy_definition(self):
+
+        scour_policy = ScourPolicyStatesOperations()
+        execute = scour_policy.policy_states_summarize_for_subscription_query()
+        results = execute()
+
+        self.assertFalse('error' in results)
+        self.assertIsNotNone(results)
+
+    def test_policy_states_list_query_results_for_management_group(self):
+        scour_policy = ScourPolicyStatesOperations()
+
+        execute = scour_policy.policy_states_list_query_results_for_management_group('global-legacy001-mg')
+        results = execute()
+        print(results)
+
+    def test_policy_states_list_query_results_for_policy_definition(self):
+        scour_policy = ScourPolicyStatesOperations()
+
+        subscription_id = self.config["DEFAULT"]["subscription_id"]
+
+        execute = scour_policy.policy_states_list_query_results_for_policy_definitions(subscription_id,
+                                                                                       'glbl-pr-sec-storage-auditvnet-pol')
+        results = execute()
+        print(results)
 
     def test_policy_states_summarize_for_subscription(self):
         """
@@ -90,7 +127,7 @@ class TestOperationsPolicyStates(unittest.TestCase):
         # a simple replace makes the URL a workable generic call to the API
         api_config_key = api_config_key.replace("{subscriptionId}", "{}")
 
-        execute = polic_states.policystates_genericfunc(api_config_key, subscriptionId,)
+        execute = polic_states.policystates_genericfunc(api_config_key, subscriptionId, )
         result = execute()
 
         self.assertIsNotNone(result)
@@ -120,5 +157,19 @@ class TestOperationsPolicyStates(unittest.TestCase):
             management_grp=management_grp, subscription=subscription
         )
 
+        df = df.drop(columns=['serialize', 'timestamp'])
+        df.to_excel(xlsx_file)
 
+        pm = pluggy.PluginManager("Analysis")
+        pm.add_hookspecs(DatbasePlugins)
+        pm.register(SQLServerDatabase())
+        engine_list = pm.hook.get_db_engine(
+            driver=self.driver,
+            server=self.server,
+            database=self.database,
+            user=self.user,
+            password=self.password,
+        )
+        engine = engine_list[0]
 
+        df.to_sql('test_noncompliant_002', con=engine, if_exists='append', chunksize=1000)
