@@ -4,7 +4,7 @@ import pandas as pd
 from azure.mgmt.resource.policy import PolicyClient
 from dotenv import load_dotenv
 
-from mop.azure.connections import request_authenticated_session
+from mop.azure.connections import request_authenticated_session, Connections
 from mop.azure.utils.create_configuration import (
     change_dir,
     CONFVARIABLES,
@@ -12,12 +12,22 @@ from mop.azure.utils.create_configuration import (
 )
 
 
-class PolicyDefinitions:
-    def __init__(self):
+class PolicyDefinition:
+    def __init__(self, credentials=None):
         load_dotenv()
         with change_dir(OPERATIONSPATH):
             self.config = ConfigParser()
             self.config.read(CONFVARIABLES)
+
+        self.credentials = Connections().get_authenticated_client()
+
+    def get_policy_definition(self, policy_definition_name):
+
+        base_subscription_id = self.config['DEFAULT']['subscription_id']
+        policy_client = PolicyClient(self.credentials, subscription_id=base_subscription_id)
+        policy_definition = policy_client.policy_definitions.get(policy_definition_name)
+
+        return policy_definition
 
     def policyinsights_genericfunc(self, api_endpoint, *args):
         """
@@ -44,14 +54,39 @@ class PolicyDefinitions:
 
         return policy_definitions_function
 
-    def policy_definitions_list_by_management_group(self, managementGroupId):
-        api_endpoint = self.config['AZURESDK']['policydefinitionslistbymanagementgroup']
-        api_endpoint = api_endpoint.format(managementGroupId=managementGroupId)
+    def get_policy_definitions(self, subscription_id, policy_definition_name, authenticated_session=None):
+        """
 
-        with request_authenticated_session() as req:
-            policy_definitions_function = req.get(api_endpoint).json
+        :param subscription_id:
+        :param policy_definition_name:
+        :param request_authenticated_session:
+        :return:
+        """
 
-        return policy_definitions_function
+        api_endpoint = self.config["AZURESDK"]["policy_definitions_get"]
+        api_endpoint = api_endpoint.format(subscriptionId=subscription_id, policyDefinitionName=policy_definition_name)
+
+        api_endpoint_2 = self.config["AZURESDK"]["get_policy_definition_by_name"]
+        api_endpoint_2 = api_endpoint_2.format(policyDefinitionName=policy_definition_name)
+
+        policy_definitions_function = None
+
+        if authenticated_session:
+            policy_definitions_function = authenticated_session.get(api_endpoint)
+
+            if policy_definitions_function.status_code == 404:
+                policy_definitions_function = authenticated_session.get(api_endpoint_2)
+        else:
+            with request_authenticated_session() as req:
+                policy_definitions_function = req.get(api_endpoint)
+
+                if policy_definitions_function.status_code == 404:
+                    policy_definitions_function = req.get(api_endpoint_2)
+
+        if policy_definitions_function is not None and policy_definitions_function.status_code == 200:
+            return policy_definitions_function.json
+        else:
+            return None
 
 def get_policydefinitions_management_grp(creds, base_subscription, management_grp):
     """
@@ -61,8 +96,7 @@ def get_policydefinitions_management_grp(creds, base_subscription, management_gr
     :return:
     """
     policy_client = PolicyClient(
-        credentials=creds, subscription_id=base_subscription, base_url=None
-    )
+        credentials=creds, subscription_id=base_subscription)
     results = policy_client.policy_definitions.list_by_management_group(management_grp)
     return results
 

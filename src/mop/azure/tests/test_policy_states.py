@@ -2,10 +2,8 @@ import os
 import unittest
 from configparser import ConfigParser
 
-import pandas as pd
 import pluggy
 from dotenv import load_dotenv
-import json
 
 from mop.azure.analysis.policy_analysis import EvaluatePolicies
 from mop.azure.connections import Connections
@@ -53,6 +51,7 @@ class TestOperationsPolicyStates(unittest.TestCase):
         values = result["value"]
 
         self.assertIs(type(values), list)
+
     def test_policy_states_summarize_for_policy_definition(self):
 
         scour_policy = ScourPolicyStatesOperations()
@@ -61,6 +60,23 @@ class TestOperationsPolicyStates(unittest.TestCase):
 
         self.assertFalse('error' in results)
         self.assertIsNotNone(results)
+
+    def test_policy_states_list_query_results_for_management_group(self):
+        scour_policy = ScourPolicyStatesOperations()
+
+        execute = scour_policy.policy_states_list_query_results_for_management_group('global-legacy001-mg')
+        results = execute()
+        print(results)
+
+    def test_policy_states_list_query_results_for_policy_definition(self):
+        scour_policy = ScourPolicyStatesOperations()
+
+        subscription_id = self.config["DEFAULT"]["subscription_id"]
+
+        execute = scour_policy.policy_states_list_query_results_for_policy_definitions(subscription_id,
+                                                                                       'glbl-pr-sec-storage-auditvnet-pol')
+        results = execute()
+        print(results)
 
     def test_policy_states_summarize_for_subscription(self):
         """
@@ -111,7 +127,7 @@ class TestOperationsPolicyStates(unittest.TestCase):
         # a simple replace makes the URL a workable generic call to the API
         api_config_key = api_config_key.replace("{subscriptionId}", "{}")
 
-        execute = polic_states.policystates_genericfunc(api_config_key, subscriptionId,)
+        execute = polic_states.policystates_genericfunc(api_config_key, subscriptionId, )
         result = execute()
 
         self.assertIsNotNone(result)
@@ -155,6 +171,5 @@ class TestOperationsPolicyStates(unittest.TestCase):
             password=self.password,
         )
         engine = engine_list[0]
-
 
         df.to_sql('test_noncompliant_002', con=engine, if_exists='append', chunksize=1000)

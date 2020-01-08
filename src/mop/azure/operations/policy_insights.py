@@ -54,6 +54,7 @@ class PolicyInsights:
 
         return query_results.value
 
+
     def policy_insights_management_grp_query(
         self, management_group_name, policy_states="latest", query_options=None
     ):

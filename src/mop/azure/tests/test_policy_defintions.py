@@ -6,7 +6,7 @@ from configparser import ConfigParser
 from dotenv import load_dotenv
 
 from mop.azure.utils.create_configuration import OPERATIONSPATH, change_dir, TESTVARIABLES
-from mop.azure.resources.policy_definitions import PolicyDefinitions
+from mop.azure.resources.policy_definitions import PolicyDefinition
 
 class TestPolicyDefinitionsCase(unittest.TestCase):
 
@@ -26,9 +26,16 @@ class TestPolicyDefinitionsCase(unittest.TestCase):
         # Do not use SA in production
         user = "SA"
 
+    def test_get_policy_definition(self):
+
+        policy_definitions = PolicyDefinition()
+        result = policy_definitions.get_policy_definition('501541f7-f7e7-4cd6-868c-4190fdad3ac9')
+
+        print(result)
+
     def test_policy_definitions_by_subscription(self):
         subscriptionId = self.config['DEFAULT']['subscription_id']
-        policy_definitions = PolicyDefinitions()
+        policy_definitions = PolicyDefinition()
         defintion_list_function = policy_definitions.policy_definitions_by_subscription(subscriptionId=subscriptionId)
         results = defintion_list_function()
         policies = results['value']
@@ -49,7 +56,7 @@ class TestPolicyDefinitionsCase(unittest.TestCase):
         search_category = 'Nestle Security'
 
 
-        policy_definitions = PolicyDefinitions()
+        policy_definitions = PolicyDefinition()
 
         defintion_list_function = policy_definitions.policy_definitions_list_by_management_group(managementGroupId)
         results = defintion_list_function()

@@ -7,7 +7,9 @@ from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import sessionmaker
 
+from mop.azure.connections import request_authenticated_session
 from mop.azure.operations.policy_states import ScourPolicyStatesOperations
+from mop.azure.resources.policy_definitions import PolicyDefinition
 from mop.azure.utils.create_configuration import CONFVARIABLES, change_dir, OPERATIONSPATH
 from mop.db.basedb import BaseDB
 
@@ -37,6 +39,57 @@ class SummarizeSubscription():
 
         self.engine = self.baseDb.get_db_engine()
         self.Session = sessionmaker(bind=self.engine)
+
+    def summarize_query_results_for_policy_definitions(self):
+
+        models = self.baseDb.get_db_model(self.engine)
+        FactCompliance = models.classes.fact_compliance
+        SCIDimPolicies = models.classes.sci_dim_policies
+
+        session = self.Session()
+        results = session.query(FactCompliance).all()
+        pf = session.query(SCIDimPolicies).all()
+
+        policies_found = list()
+        for row in pf:
+            policies_found.append(row.policy_definition_name)
+
+        bulk_insert = list()
+
+        try:
+
+            for row in results:
+                print(row.subscription_id, row.policy_definition_name)
+                if row.policy_definition_name not in policies_found:
+                    with request_authenticated_session() as req:
+                        policy = PolicyDefinition().get_policy_definitions(row.subscription_id, row.policy_definition_name, req)
+                        if policy:
+                            policy_defintion = policy()
+
+                            displayName = policy_defintion['properties']['displayName']
+                            description = policy_defintion['properties']['description']
+                            policyType = policy_defintion['properties']['policyType']
+                            if 'category' in policy_defintion['properties']['metadata']:
+                                category = policy_defintion['properties']['metadata']['category']
+                            else:
+                                category = ''
+                            print(displayName)
+                            policy = SCIDimPolicies(policy_definition_name=row.policy_definition_name,
+                                           policy_description=description,
+                                           policy_display_name=displayName,
+                                           policy_type=policyType,
+                                           policy_category=category)
+
+                            policies_found.append(policy.policy_definition_name)
+                            bulk_insert.append(policy)
+
+
+
+        except ConnectionError:
+            pass
+        finally:
+            session.bulk_save_objects(bulk_insert)
+            session.commit()
 
     def summarize_subscriptions(self, management_grp):
         # create a configured "Session" class
@@ -69,6 +122,7 @@ class SummarizeSubscription():
                 session.bulk_save_objects(bulk_insert)
                 session.commit()
 
+
 def determine_compliance_ratio(resourceDetails):
     compliance_dict = dict()
     if len(resourceDetails) <= 2:
@@ -95,8 +149,7 @@ def determine_compliance_ratio(resourceDetails):
     return compliance_dict
 
 
-def subscription_policy_compliance(subscriptionId, tenant_id="", management_grp="",):
-
+def subscription_policy_compliance(subscriptionId, tenant_id="", management_grp="", ):
     with change_dir(OPERATIONSPATH):
         config = ConfigParser()
         config.read(CONFVARIABLES)
@@ -108,7 +161,6 @@ def subscription_policy_compliance(subscriptionId, tenant_id="", management_grp=
     jmespath_results = jmespath.compile("[0].results.resourceDetails")
     scour_policy = ScourPolicyStatesOperations()
     execute = scour_policy.policy_states_summarize_for_subscription(subscriptionId)
-
 
     # Execute returns a method the can be executed anywhere more than once
     result = execute()
