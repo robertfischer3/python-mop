@@ -3,6 +3,8 @@ import urllib
 import pluggy
 from sqlalchemy import MetaData, Table, Column, Integer, String, Float
 from sqlalchemy import create_engine
+from sqlalchemy.sql import sqltypes
+
 from mop.azure.analysis.analysis_db import AnalysisDb
 
 dbhookimpl = pluggy.HookimplMarker("Analysis")
@@ -70,8 +72,28 @@ class SQLServerDatabase(object):
 
         meta = MetaData()
 
+        compiled_sci = Table(
+            "test_compiled_sci",
+            meta,
+            Column("id", sqltypes.BigInteger, autoincrement=True, primary_key=True),
+            Column("tenant_id", String(36)),
+            Column("management_grp", sqltypes.NVARCHAR(300)),
+            Column("subscription_id", String(36)),
+            Column("subscription_display_name", sqltypes.NVARCHAR),
+            Column("policy_definition_name", String(36)),
+            Column("policy_display_name", sqltypes.NVARCHAR),
+            Column("policy_description", sqltypes.NVARCHAR),
+            Column("policy_definition_id", String),
+            Column("policy_compliant_resources", Integer),
+            Column("policy_noncompliant_resources", Integer),
+            Column("total_resources_measured", Integer),
+            Column("percent_in_compliance", Float)
+
+        )
+
+
         factcompliance = Table(
-            "factcompliance",
+            "test_factcompliance",
             meta,
             Column("id", Integer, primary_key=True),
             Column("resource_id", String),
@@ -89,7 +111,7 @@ class SQLServerDatabase(object):
 
 
         policydefinitions = Table(
-            "policydefinitions",
+            "test_policydefinitions",
             meta,
             Column("id", Integer, primary_key=True),
             Column("policy_definition_name", String(36)),
@@ -99,7 +121,7 @@ class SQLServerDatabase(object):
 
 
         subscriptions = Table(
-            "subscriptions",
+            "test_subscriptions",
             meta,
             Column("id", Integer, primary_key=True),
             Column("tenant_id", String(36)),

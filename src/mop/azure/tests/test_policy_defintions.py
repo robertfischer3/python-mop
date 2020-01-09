@@ -1,4 +1,3 @@
-import json
 import os
 import unittest
 from configparser import ConfigParser
@@ -6,7 +5,7 @@ from configparser import ConfigParser
 from dotenv import load_dotenv
 
 from mop.azure.utils.create_configuration import OPERATIONSPATH, change_dir, TESTVARIABLES
-from mop.azure.resources.policy_definitions import PolicyDefinition
+from mop.azure.comprehension.resources.policy_definitions import PolicyDefinition
 
 class TestPolicyDefinitionsCase(unittest.TestCase):
 
@@ -34,10 +33,17 @@ class TestPolicyDefinitionsCase(unittest.TestCase):
         print(result)
 
     def test_policy_definitions_by_subscription(self):
+        """
+
+        :return:
+        """
+
         subscriptionId = self.config['DEFAULT']['subscription_id']
+
         policy_definitions = PolicyDefinition()
-        defintion_list_function = policy_definitions.policy_definitions_by_subscription(subscriptionId=subscriptionId)
-        results = defintion_list_function()
+        defintion_list_function = policy_definitions.policy_definitions_by_subscription_req(subscriptionId=subscriptionId)
+
+        results = defintion_list_function.json()
         policies = results['value']
         for policy in policies:
             print(subscriptionId)
@@ -51,6 +57,10 @@ class TestPolicyDefinitionsCase(unittest.TestCase):
                 print(policy['properties']['description'])
 
     def test_policy_definitions_list_by_management_group(self):
+        """
+
+        :return:
+        """
 
         managementGroupId = self.config['DEFAULT']['management_grp_id']
         search_category = 'Nestle Security'

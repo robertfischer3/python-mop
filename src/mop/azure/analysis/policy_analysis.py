@@ -1,8 +1,8 @@
-from mop.azure.resources.policy_definitions import (
+from mop.azure.comprehension.resources.policy_definitions import (
     management_grp_policy_list_as_df,
 )
 from mop.azure.operations.policy_insights import PolicyInsights
-from mop.azure.resources.subscriptions import Subscriptions
+from mop.azure.comprehension.resources.subscriptions import Subscriptions
 
 from dotenv import load_dotenv
 import pandas as pd

@@ -11,7 +11,7 @@ import uuid
 from mop.azure.analysis.compile_compliance import subscription_policy_compliance
 from mop.azure.utils.create_configuration import change_dir, OPERATIONSPATH, TESTVARIABLES
 from mop.azure.utils.create_sqldb import SQLServerDatabase, DatbasePlugins
-from mop.azure.resources.subscriptions import Subscriptions
+from mop.azure.comprehension.resources.subscriptions import Subscriptions
 from mop.db.basedb import BaseDB
 
 

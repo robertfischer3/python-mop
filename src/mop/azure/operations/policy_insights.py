@@ -26,7 +26,7 @@ class PolicyInsights:
         :param args:
         :return:
         """
-        # The policyinsights_genericfunc has no way of learning the named string format parameters
+        # The policyinsights_generic_req has no way of learning the named string format parameters
         # a simple replace makes the URL a workable generic call to the API
         # example: api_config_key.replace('{subscriptionId}', '{}')
 
