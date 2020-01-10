@@ -34,12 +34,16 @@ def create_baseline_configuration(generate_test=True):
         "management_grp_id": os.environ["MANGRP"],
         "tenant_id": os.environ["TENANT"],
     }
-    config["SQLSERVER"] = {
+    """
+    The configuration file supports multiple database instances
+    """
+    config["SQLSERVER"] = {"instance01":{
         "server":"tcp:172.17.0.1",
         "database":"TestDB2",
         "username": "SA",
         "db_driver":"{ODBC Driver 17 for SQL Server}",
         "dialect":"mssql"
+    }
     }
     config["FILTERS"] = {
         "policy_defition_category": "Security"

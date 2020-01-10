@@ -11,7 +11,7 @@ from sqlalchemy.sql import sqltypes
 
 from mop.azure.analysis.analysis_db import AnalysisDb
 from mop.azure.utils.create_configuration import change_dir, OPERATIONSPATH, CONFVARIABLES
-from mop.db.basedb import BaseDB
+from mop.db.basedb import BaseDb
 
 dbhookimpl = pluggy.HookimplMarker("Analysis")
 dbhookspec = pluggy.HookspecMarker("Analysis")
@@ -43,15 +43,9 @@ class SQLServerDatabase(object):
             self.config = ConfigParser()
             self.config.read(CONFVARIABLES)
 
-        self.server = self.config['SQLSERVER']['server']
-        self.database = self.config['SQLSERVER']['database']
-        self.username = self.config['SQLSERVER']['username']
-        self.db_driver = self.config['SQLSERVER']['db_driver']
-        self.dialect = self.config['SQLSERVER']['dialect']
-
         password = os.environ['DATABASEPWD']
 
-        self.baseDb = BaseDB(server=self.server,
+        self.baseDb = BaseDb(server=self.server,
                              database=self.database,
                              user=self.username,
                              driver=self.db_driver,

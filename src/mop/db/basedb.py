@@ -1,10 +1,22 @@
 import urllib
+from configparser import ConfigParser
+
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 
-class BaseDB:
-    def __init__(self, driver, database, dialect, password, server, user):
+from mop.azure.utils.create_configuration import OPERATIONSPATH, change_dir, CONFVARIABLES, TESTVARIABLES
+
+
+class BaseDb:
+    def __init__(self, driver, database, dialect, password, server, user, configuration_file="CONFVARIABLES"):
+
+        with change_dir(OPERATIONSPATH):
+            self.config = ConfigParser()
+            if "CONFVARIABLES" in configuration_file:
+                self.config.read(CONFVARIABLES)
+            else:
+                self.config.read(TESTVARIABLES)
 
         self.driver = driver
         self.dialect = dialect

@@ -12,7 +12,7 @@ from mop.azure.analysis.compile_compliance import subscription_policy_compliance
 from mop.azure.comprehension.resources.subscriptions import Subscriptions
 from mop.azure.utils.create_configuration import change_dir, OPERATIONSPATH, TESTVARIABLES
 from mop.azure.utils.create_sqldb import SQLServerDatabase, DatbasePlugins
-from mop.db.basedb import BaseDB
+from mop.db.basedb import BaseDb
 
 
 class TestUtilDb(unittest.TestCase):
@@ -162,7 +162,7 @@ class TestUtilDb(unittest.TestCase):
         password = self.password
         db_driver = "{ODBC Driver 17 for SQL Server}"
 
-        baseDb = BaseDB(
+        baseDb = BaseDb(
             server=server,
             database=database,
             user=username,

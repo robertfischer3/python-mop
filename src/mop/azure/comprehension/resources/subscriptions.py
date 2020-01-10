@@ -1,7 +1,6 @@
 from configparser import ConfigParser
 
 from azure.mgmt.subscription import SubscriptionClient
-from azure.mgmt.subscription.operations import SubscriptionsOperations
 from azure.mgmt.managementgroups import ManagementGroupsAPI
 import pandas as pd
 from azure.mgmt.resource.policy import PolicyClient

@@ -11,7 +11,7 @@ from mop.azure.connections import request_authenticated_session
 from mop.azure.operations.policy_states import ScourPolicyStatesOperations
 from mop.azure.comprehension.resources.policy_definitions import PolicyDefinition
 from mop.azure.utils.create_configuration import CONFVARIABLES, change_dir, OPERATIONSPATH
-from mop.db.basedb import BaseDB
+from mop.db.basedb import BaseDb
 
 
 class SummarizeSubscription():
@@ -30,7 +30,7 @@ class SummarizeSubscription():
 
         password = os.environ['DATABASEPWD']
 
-        self.baseDb = BaseDB(server=self.server,
+        self.baseDb = BaseDb(server=self.server,
                              database=self.database,
                              user=self.username,
                              driver=self.db_driver,
