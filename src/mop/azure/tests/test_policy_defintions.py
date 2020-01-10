@@ -63,7 +63,7 @@ class TestPolicyDefinitionsCase(unittest.TestCase):
         """
 
         managementGroupId = self.config['DEFAULT']['management_grp_id']
-        search_category = 'Nestle Security'
+        search_category = self.config["FILTERS"]["policy_defition_category"]
 
 
         policy_definitions = PolicyDefinition()

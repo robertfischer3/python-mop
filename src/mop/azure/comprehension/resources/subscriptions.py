@@ -120,6 +120,11 @@ class Subscriptions:
         :return:
         """
 
+        with change_dir(OPERATIONSPATH):
+            config = ConfigParser()
+            config.read(CONFVARIABLES)
+
+
         management_client = ManagementGroupsAPI(self.credentials)
         mngrp_subscriptions = management_client.entities.list(group_name=management_grp)
 
@@ -145,7 +150,7 @@ class Subscriptions:
                 for policy in policies:
                     if (
                         not policy.metadata.get("category") is None
-                        and policy.metadata.get("category") in "Nestle Security"
+                        and policy.metadata.get("category") in config["FILTERS"]["policy_defition_category"]
                     ):
 
                         assignment = PolicyAssignment(

@@ -36,11 +36,13 @@ class BaseDB:
         return self.engine
 
     def get_db_model(self, engine):
+        """
+
+        :param engine:
+        :return:
+        """
 
         Base = automap_base()
-
-        # engine, suppose it has two tables 'factcompliance' and 'noncompliant' set up
-        # reflect the tables
         Base.prepare(engine, reflect=True)
 
         return Base

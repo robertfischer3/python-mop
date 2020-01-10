@@ -1,17 +1,17 @@
 import os
 import unittest
+import uuid
 from configparser import ConfigParser
 
+import pandas as pd
 import pluggy
 import pyodbc
 from dotenv import load_dotenv
-import pandas as pd
-import uuid
 
 from mop.azure.analysis.compile_compliance import subscription_policy_compliance
+from mop.azure.comprehension.resources.subscriptions import Subscriptions
 from mop.azure.utils.create_configuration import change_dir, OPERATIONSPATH, TESTVARIABLES
 from mop.azure.utils.create_sqldb import SQLServerDatabase, DatbasePlugins
-from mop.azure.comprehension.resources.subscriptions import Subscriptions
 from mop.db.basedb import BaseDB
 
 
@@ -26,20 +26,30 @@ class TestUtilDb(unittest.TestCase):
         # Server is the IP address or DNS of the database server
         self.server = "172.17.0.1"
         # Can be any database name, as long as you are consistent
-        self.database = "TestDB2"
+        self.database = "TestDB3"
         # Never place passwords in code.  Your just asking for trouble otherwise
         self.password = os.environ["DATABASEPWD"]
         # Do not use SA in production
         self.user = "SA"
 
     def test_create_database(self):
+        sql_db = SQLServerDatabase()
+        tables = sql_db.create_database_tables(driver=self.driver,
+                                               server=self.server,
+                                               database=self.database,
+                                               user=self.user,
+                                               password=self.password, )
+
+        self.assertIsNotNone(tables)
+
+    def test_create_database_pluggy(self):
         # Testing the pluggy architecture and database creation code
 
         pm = pluggy.PluginManager("Analysis")
         pm.add_hookspecs(DatbasePlugins)
         pm.register(SQLServerDatabase())
 
-        tables = pm.hook.create_database(
+        tables = pm.hook.create_database_tables(
             server=self.server,
             database=self.database,
             user=self.user,
@@ -49,7 +59,7 @@ class TestUtilDb(unittest.TestCase):
 
         self.assertIsNotNone(tables)
 
-    def test_get_database_engine(self):
+    def test_get_database_engine_pluggy(self):
         pm = pluggy.PluginManager("Analysis")
         pm.add_hookspecs(DatbasePlugins)
         pm.register(SQLServerDatabase())
@@ -62,7 +72,7 @@ class TestUtilDb(unittest.TestCase):
         )
         self.assertIsNotNone(engine)
 
-    def test_pandas_dataframe_to_sql(self):
+    def test_pandas_dataframe_to_sql_pluggy(self):
 
         pm = pluggy.PluginManager("Analysis")
         pm.add_hookspecs(DatbasePlugins)
@@ -84,7 +94,7 @@ class TestUtilDb(unittest.TestCase):
 
         data.to_sql('book_details', con=engine, if_exists='append', chunksize=1000)
 
-    def test_pandas_dataframe_subscriptions_to_sql(self):
+    def test_pandas_dataframe_subscriptions_to_sql_pluggy(self):
         pm = pluggy.PluginManager("Analysis")
         pm.add_hookspecs(DatbasePlugins)
         pm.register(SQLServerDatabase())
@@ -99,10 +109,10 @@ class TestUtilDb(unittest.TestCase):
         management_grp = os.environ["MANGRP"]
 
         subscriptions = Subscriptions().list_management_grp_subcriptions(management_grp=management_grp)
-        subscriptions.reset_index(inplace = True)
-        subscriptions.to_sql('subscriptions', index=False,  con=engine, if_exists='append', chunksize=1000)
+        subscriptions.reset_index(inplace=True)
+        subscriptions.to_sql('subscriptions', index=False, con=engine, if_exists='append', chunksize=1000)
 
-    def test_pandas_dataframe_policy_states_summarize_for_subscription(self):
+    def test_pandas_dataframe_policy_states_summarize_for_subscription_pluggy(self):
 
         pm = pluggy.PluginManager("Analysis")
         pm.add_hookspecs(DatbasePlugins)
@@ -118,7 +128,7 @@ class TestUtilDb(unittest.TestCase):
         subscriptionId = self.config["DEFAULT"]["subscription_id"]
         df = subscription_policy_compliance(subscriptionId)
 
-        self.assertTrue(len(df.index)>0)
+        self.assertTrue(len(df.index) > 0)
 
         engine = engine_list[0]
 
@@ -141,7 +151,7 @@ class TestUtilDb(unittest.TestCase):
 
         self.assertEqual(result, [0])
 
-    def test_base_class_sqlserver(self):
+    def test_base_class_sqlserver_pluggy(self):
         """
          Testing base class for coverage only.  Class will be developed later
         :return:
@@ -165,7 +175,7 @@ class TestUtilDb(unittest.TestCase):
         engine = baseDb.get_db_engine()
         self.assertIsNotNone(engine)
 
-        factcompliance, noncompliance, subscriptions  = baseDb.get_db_model(engine=engine)
+        factcompliance, noncompliance, subscriptions = baseDb.get_db_model(engine=engine)
 
         if subscriptions:
 

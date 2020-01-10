@@ -41,6 +41,9 @@ def create_baseline_configuration(generate_test=True):
         "db_driver":"{ODBC Driver 17 for SQL Server}",
         "dialect":"mssql"
     }
+    config["FILTERS"] = {
+        "policy_defition_category": "Security"
+    }
     config["LOGGING"] = {"level": "DEBUG"}
     config["AZURESDK"] = {
         "PolicyStatesSummarizeForPolicyDefinition": "https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01",
