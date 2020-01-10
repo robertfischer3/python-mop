@@ -29,28 +29,33 @@ class PolicyDefinition:
 
         return policy_definition
 
-    def policyinsights_genericfunc(self, api_endpoint, *args):
+    def policyinsights_generic_req(self, api_endpoint, *args):
         """
             This function can theoretically call any Azure SDK API the service pricipal has access to
         :param api_config_key:
         :param args:
         :return:
         """
-        # The policyinsights_genericfunc has no way of learning the named string format parameters
+        # The policyinsights_generic_req has no way of learning the named string format parameters
         # a simple replace makes the URL a workable generic call to the API
         # example: api_config_key.replace('{subscriptionId}', '{}')
 
         api_endpoint = api_endpoint.format(*args)
 
         with request_authenticated_session() as req:
-            return req.post(api_endpoint).json()
+            return req.post(api_endpoint)
 
-    def policy_definitions_by_subscription(self, subscriptionId):
+    def policy_definitions_by_subscription_req(self, subscriptionId):
+        """
+
+        :param subscriptionId:
+        :return: Policy definitions by subscription request
+        """
         api_endpoint = self.config["AZURESDK"]["policydefintionsbysubscription"]
         api_endpoint = api_endpoint.format(subscriptionId=subscriptionId)
 
         with request_authenticated_session() as req:
-            policy_definitions_function = req.get(api_endpoint).json
+            policy_definitions_function = req.get(api_endpoint)
 
         return policy_definitions_function
 

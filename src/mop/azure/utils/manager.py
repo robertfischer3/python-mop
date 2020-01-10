@@ -20,7 +20,7 @@ def main():
     pm.add_hookspecs(DatbasePlugins)
     pm.register(SQLServerDatabase())
 
-    results = pm.hook.create_database(
+    results = pm.hook.create_database_tables(
         server=server, database=database, user=user, password=password, driver=driver
     )
 

@@ -9,7 +9,7 @@ from sqlalchemy.orm import sessionmaker
 
 from mop.azure.connections import request_authenticated_session
 from mop.azure.operations.policy_states import ScourPolicyStatesOperations
-from mop.azure.resources.policy_definitions import PolicyDefinition
+from mop.azure.comprehension.resources.policy_definitions import PolicyDefinition
 from mop.azure.utils.create_configuration import CONFVARIABLES, change_dir, OPERATIONSPATH
 from mop.db.basedb import BaseDB
 

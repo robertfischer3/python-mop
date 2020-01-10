@@ -1,9 +1,17 @@
+import os
 import urllib
+from configparser import ConfigParser
 
 import pluggy
-from sqlalchemy import MetaData, Table, Column, Integer, String, Float
+from dotenv import load_dotenv
+from sqlalchemy import MetaData, Table, Column, Integer, String, Float, BigInteger, DateTime
 from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql import sqltypes
+
 from mop.azure.analysis.analysis_db import AnalysisDb
+from mop.azure.utils.create_configuration import change_dir, OPERATIONSPATH, CONFVARIABLES
+from mop.db.basedb import BaseDB
 
 dbhookimpl = pluggy.HookimplMarker("Analysis")
 dbhookspec = pluggy.HookspecMarker("Analysis")
@@ -13,7 +21,7 @@ class DatbasePlugins(object):
     """A hook specification namespace."""
 
     @dbhookspec
-    def create_database(self, server, database, user, password, driver):
+    def create_database_tables(self, server, database, user, password, driver):
         """Datbase creation hook"""
 
     @dbhookspec
@@ -29,10 +37,34 @@ class SQLServerDatabase(object):
     """
         This class is an implementation of the dbhookspec
     """
+    def __init__(self):
+        load_dotenv()
+        with change_dir(OPERATIONSPATH):
+            self.config = ConfigParser()
+            self.config.read(CONFVARIABLES)
+
+        self.server = self.config['SQLSERVER']['server']
+        self.database = self.config['SQLSERVER']['database']
+        self.username = self.config['SQLSERVER']['username']
+        self.db_driver = self.config['SQLSERVER']['db_driver']
+        self.dialect = self.config['SQLSERVER']['dialect']
+
+        password = os.environ['DATABASEPWD']
+
+        self.baseDb = BaseDB(server=self.server,
+                             database=self.database,
+                             user=self.username,
+                             driver=self.db_driver,
+                             dialect=self.dialect,
+                             password=password)
+
+        self.engine = self.baseDb.get_db_engine()
+        self.Session = sessionmaker(bind=self.engine)
 
     @dbhookimpl
     def get_db_engine(self, driver, server, database, password, user):
         """
+        TODO Chnage method signature
          Creates SQL Datase engine
         :param database:
         :param driver:
@@ -41,23 +73,11 @@ class SQLServerDatabase(object):
         :param user:
         :return: database engine
         """
-        self.driver = driver
-        self.server = server
-        self.database = database
-        self.user = (user,)
-        self.password = password
-        connect_str = "DRIVER={driver};SERVER={server};DATABASE={database};UID=SA;PWD={password}".format(
-            driver=self.driver,
-            server=self.server,
-            database=self.database,
-            password=self.password,
-        )
-        params = urllib.parse.quote_plus(connect_str)
-        engine = create_engine("mssql+pyodbc:///?odbc_connect=%s" % params)
-        return engine
+
+        return self.engine
 
     @dbhookimpl
-    def create_database(self, server, database, user, password, driver):
+    def create_database_tables(self, server, database, user, password, driver):
         """
             This function creates a SQL Server 2019 for Linux database table for handling results found in analysis
             As the framework becomes more modular, multiple database initiation modules need to be created
@@ -70,42 +90,73 @@ class SQLServerDatabase(object):
 
         meta = MetaData()
 
-        factcompliance = Table(
-            "factcompliance",
+        compiled_sci = Table(
+            "test_compiled_sci",
             meta,
-            Column("id", Integer, primary_key=True),
+            Column("id", BigInteger, autoincrement=True, primary_key=True),
+            Column("tenant_id", String(36)),
+            Column("management_grp", sqltypes.NVARCHAR(300)),
+            Column("subscription_id", String(36)),
+            Column("subscription_display_name", sqltypes.NVARCHAR(64)),
+            Column("business_owner_tag", sqltypes.NVARCHAR(256)),
+            Column("technical_owner_tag", sqltypes.NVARCHAR(256)),
+            Column("policy_definition_name", String(36)),
+            Column("policy_display_name", sqltypes.NVARCHAR(128)),
+            Column("policy_description", sqltypes.NVARCHAR(512)),
+            Column("policy_definition_id", String(512)),
+            Column("policy_compliant_resources", Integer),
+            Column("policy_noncompliant_resources", Integer),
+            Column("total_resources_measured", Integer),
+            Column("percent_in_compliance", Float),
+            Column("created", DateTime),
+            Column("modified", DateTime)
+
+        )
+
+
+        factcompliance = Table(
+            "test_factcompliance",
+            meta,
+            Column("id", BigInteger, primary_key=True),
             Column("resource_id", String),
             Column("subscription_id", String(36)),
             Column("tenant_id", String(36)),
             Column("policy_definition_name", String(36)),
             Column("policy_assignment_id", String),
-            Column("policy_definition_id", String),
+            Column("policy_definition_id", sqltypes.NVARCHAR(512)),
             Column("compliant", Integer),
             Column("noncompliant", Integer),
             Column("total_resources_measured", Integer),
-            Column("percent_compliant", Float)
+            Column("percent_compliant", Float),
+            Column("created", DateTime),
+            Column("modified", DateTime)
 
         )
 
 
         policydefinitions = Table(
-            "policydefinitions",
+            "test_policydefinitions",
             meta,
             Column("id", Integer, primary_key=True),
             Column("policy_definition_name", String(36)),
-            Column("policy_display_name"),
+            Column("policy_display_name", sqltypes.NVARCHAR(128)),
+            Column("created", DateTime),
+            Column("modified", DateTime)
         )
 
 
 
         subscriptions = Table(
-            "subscriptions",
+            "test_subscriptions",
             meta,
-            Column("id", Integer, primary_key=True),
+            Column("id", BigInteger, primary_key=True),
             Column("tenant_id", String(36)),
             Column("subscription_id", String(36)),
             Column("management_grp", String(36)),
-            Column("subscription_display_name", String),
+            #The current subscription display name is 64 in most Azure documentation currently
+            Column("subscription_display_name", sqltypes.NVARCHAR(64)),
+            Column("TIMESTAMP", DateTime),
+            Column("modified", DateTime)
 
         )
 

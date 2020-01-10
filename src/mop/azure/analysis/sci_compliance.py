@@ -3,10 +3,9 @@ from configparser import ConfigParser
 from dotenv import load_dotenv
 
 from mop.azure.connections import Connections
-from mop.azure.resources.subscriptions import Subscriptions
-from mop.azure.resources.resource_group import ResourceGroup
+from mop.azure.comprehension.resources.subscriptions import Subscriptions
 from mop.azure.utils.create_configuration import OPERATIONSPATH, change_dir, CONFVARIABLES
-from mop.azure.resources.resource import Resource
+from mop.azure.comprehension.resources.resource import Resource
 
 class SCI():
     def __init__(self):
