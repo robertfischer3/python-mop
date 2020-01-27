@@ -9,7 +9,7 @@ from sqlalchemy.orm import sessionmaker
 
 from mop.azure.connections import request_authenticated_session
 from mop.azure.operations.policy_states import ScourPolicyStatesOperations
-from mop.azure.comprehension.resources.policy_definitions import PolicyDefinition
+from mop.azure.comprehension.resource_management.policy_definitions import PolicyDefinition
 from mop.azure.utils.create_configuration import CONFVARIABLES, change_dir, OPERATIONSPATH
 from mop.db.basedb import BaseDb
 
@@ -149,21 +149,18 @@ def determine_compliance_ratio(resourceDetails):
     return compliance_dict
 
 
-def subscription_policy_compliance(subscriptionId, tenant_id="", management_grp="", ):
+def subscription_policy_compliance(subscriptionId):
     with change_dir(OPERATIONSPATH):
         config = ConfigParser()
         config.read(CONFVARIABLES)
 
-    management_grp = config['DEFAULT']['management_grp_id']
-    tenant_id = config['DEFAULT']['tenant_id']
-
     jmespath_expression = jmespath.compile("value[*].policyAssignments[*].policyDefinitions[*]")
     jmespath_results = jmespath.compile("[0].results.resourceDetails")
     scour_policy = ScourPolicyStatesOperations()
-    execute = scour_policy.policy_states_summarize_for_subscription(subscriptionId)
+    response = scour_policy.policy_states_summarize_for_subscription(subscriptionId)
 
     # Execute returns a method the can be executed anywhere more than once
-    result = execute()
+    result = response.json()
     df = pd.DataFrame(columns=['subscription_id',
                                'policy_definition_name',
                                'policy_definition_id',

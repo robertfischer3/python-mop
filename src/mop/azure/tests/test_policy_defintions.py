@@ -5,7 +5,7 @@ from configparser import ConfigParser
 from dotenv import load_dotenv
 
 from mop.azure.utils.create_configuration import OPERATIONSPATH, change_dir, TESTVARIABLES
-from mop.azure.comprehension.resources.policy_definitions import PolicyDefinition
+from mop.azure.comprehension.resource_management.policy_definitions import PolicyDefinition
 
 class TestPolicyDefinitionsCase(unittest.TestCase):
 
@@ -84,6 +84,11 @@ class TestPolicyDefinitionsCase(unittest.TestCase):
                 if policy['properties']['description']:
                     policy_description = policy['properties']['description']
 
+        policy_definitions = json.dumps(response.json(), indent=4, ensure_ascii=False)
+        with open("test_assignments.json", "w") as json_results:
+            json_results.write(policy_definitions)
+
+        self.assertIsInstance(response.json(), dict)
 
         self.assertEqual(True, True)
 

@@ -2,7 +2,7 @@ import logging
 import unittest
 from configparser import ConfigParser
 import os
-from mop.azure.comprehension.resources.vnets import VNet
+from mop.azure.comprehension.resource_management.vnets import VNet
 
 from dotenv import load_dotenv
 

@@ -1,3 +1,4 @@
+import json
 import os
 import unittest
 import uuid
@@ -8,8 +9,8 @@ import pluggy
 import pyodbc
 from dotenv import load_dotenv
 
-from mop.azure.analysis.compile_compliance import subscription_policy_compliance
-from mop.azure.comprehension.resources.subscriptions import Subscriptions
+from mop.azure.analysis.policy_compliance import subscription_policy_compliance
+from mop.azure.comprehension.resource_management.subscriptions import Subscriptions
 from mop.azure.utils.create_configuration import change_dir, OPERATIONSPATH, TESTVARIABLES
 from mop.azure.utils.create_sqldb import SQLServerDatabase, DatbasePlugins
 from mop.db.basedb import BaseDb
@@ -21,24 +22,20 @@ class TestUtilDb(unittest.TestCase):
         with change_dir(OPERATIONSPATH):
             self.config = ConfigParser()
             self.config.read(TESTVARIABLES)
-        # The driver often needs to be obtained from the database publisher
-        self.driver = "{ODBC Driver 17 for SQL Server}"
-        # Server is the IP address or DNS of the database server
-        self.server = "172.17.0.1"
-        # Can be any database name, as long as you are consistent
-        self.database = "TestDB3"
-        # Never place passwords in code.  Your just asking for trouble otherwise
-        self.password = os.environ["DATABASEPWD"]
-        # Do not use SA in production
-        self.user = "SA"
+        load_dotenv()
+        sql_instance = self.config['SQLSERVER']['instance01']
+        sql_instance = json.loads(sql_instance.replace("\'", "\""))
+        self.server = sql_instance['server']
+        self.database = sql_instance['database']
+        self.username = sql_instance['username']
+        self.db_driver = sql_instance['db_driver']
+        self.dialect = sql_instance['dialect']
+
+        password = os.environ['DATABASEPWD']
 
     def test_create_database(self):
-        sql_db = SQLServerDatabase()
-        tables = sql_db.create_database_tables(driver=self.driver,
-                                               server=self.server,
-                                               database=self.database,
-                                               user=self.user,
-                                               password=self.password, )
+        sql_db = SQLServerDatabase(db_server_instance="instance01")
+        tables = sql_db.create_database_tables()
 
         self.assertIsNotNone(tables)
 
@@ -54,7 +51,7 @@ class TestUtilDb(unittest.TestCase):
             database=self.database,
             user=self.user,
             password=self.password,
-            driver=self.driver,
+            driver=self.db_driver,
         )
 
         self.assertIsNotNone(tables)
@@ -64,7 +61,7 @@ class TestUtilDb(unittest.TestCase):
         pm.add_hookspecs(DatbasePlugins)
         pm.register(SQLServerDatabase())
         engine = pm.hook.get_db_engine(
-            driver=self.driver,
+            driver=self.db_driver,
             server=self.server,
             database=self.database,
             user=self.user,
@@ -78,7 +75,7 @@ class TestUtilDb(unittest.TestCase):
         pm.add_hookspecs(DatbasePlugins)
         pm.register(SQLServerDatabase())
         engine_list = pm.hook.get_db_engine(
-            driver=self.driver,
+            driver=self.db_driver,
             server=self.server,
             database=self.database,
             user=self.user,
@@ -118,7 +115,7 @@ class TestUtilDb(unittest.TestCase):
         pm.add_hookspecs(DatbasePlugins)
         pm.register(SQLServerDatabase())
         engine_list = pm.hook.get_db_engine(
-            driver=self.driver,
+            driver=self.db_driver,
             server=self.server,
             database=self.database,
             user=self.user,
@@ -146,7 +143,7 @@ class TestUtilDb(unittest.TestCase):
             database=self.database,
             user=self.user,
             password=self.password,
-            driver=self.driver,
+            driver=self.db_driver,
         )
 
         self.assertEqual(result, [0])
@@ -156,19 +153,14 @@ class TestUtilDb(unittest.TestCase):
          Testing base class for coverage only.  Class will be developed later
         :return:
         """
-        server = "tcp:172.17.0.1"
-        database = "TestDB2"
-        username = "SA"
-        password = self.password
-        db_driver = "{ODBC Driver 17 for SQL Server}"
 
         baseDb = BaseDb(
-            server=server,
-            database=database,
-            user=username,
-            password=password,
-            driver=db_driver,
-            dialect="mssql",
+            server=self.server,
+            database=self.database,
+            user=self.username,
+            password=self.password,
+            driver=self.db_driver,
+            dialect=self.dialect,
         )
         self.assertIsNotNone(baseDb)
 

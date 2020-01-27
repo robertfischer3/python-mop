@@ -38,11 +38,11 @@ def create_baseline_configuration(generate_test=True):
     The configuration file supports multiple database instances
     """
     config["SQLSERVER"] = {"instance01":{
-        "server":"tcp:172.17.0.1",
-        "database":"TestDB2",
-        "username": "SA",
-        "db_driver":"{ODBC Driver 17 for SQL Server}",
-        "dialect":"mssql"
+        'server':'tcp:172.17.0.1',
+        'database':'TestDB2',
+        'username': 'SA',
+        'db_driver':'{ODBC Driver 17 for SQL Server}',
+        'dialect':'mssql'
     }
     }
     config["FILTERS"] = {
@@ -70,7 +70,8 @@ def create_baseline_configuration(generate_test=True):
         "policy_states_list_query_results_for_policy_definitions":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}/providers/Microsoft.PolicyInsights/policyStates/{policyStatesResource}/queryResults?api-version=2019-10-01",
         "policy_definitions_list_by_management_group":"https://management.azure.com/providers/Microsoft.Management/managementgroups/{managementGroupId}/providers/Microsoft.Authorization/policyDefinitions?api-version=2019-09-01",
         "policy_definitions_get":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}?api-version=2019-09-01",
-        "get_policy_definition_by_name":"https://management.azure.com/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}?api-version=2019-09-01"
+        "get_policy_definition_by_name":"https://management.azure.com/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}?api-version=2019-09-01",
+        "policy_assignments_list":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyAssignments?api-version=2019-09-01"
     }
 
     with atomic_write(CONFVARIABLES, "w") as configfile:
