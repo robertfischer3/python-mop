@@ -4,7 +4,7 @@ from configparser import ConfigParser
 import os
 from dotenv import load_dotenv
 
-from mop.azure.analysis.compile_compliance import SummarizeSubscription
+from mop.azure.analysis.policy_compliance import SummarizeSubscription
 from mop.azure.utils.create_configuration import (
     TESTVARIABLES,
     change_dir,

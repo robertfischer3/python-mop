@@ -134,13 +134,14 @@ class ScourPolicyStatesOperations:
     def policy_states_summarize_for_subscription(self, subscription):
         """
 
+        :return:
         :param subscription:
         :return:
         """
         api_endpoint = self.config["AZURESDK"]["policystatessummarizeforsubscription"]
         api_endpoint = api_endpoint.format(subscriptionId=subscription)
         with request_authenticated_session() as req:
-            policy_states_summary_subscription = req.post(api_endpoint).json
+            policy_states_summary_subscription = req.post(api_endpoint)
 
         return policy_states_summary_subscription
 

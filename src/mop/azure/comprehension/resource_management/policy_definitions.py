@@ -55,9 +55,9 @@ class PolicyDefinition:
         api_endpoint = api_endpoint.format(subscriptionId=subscriptionId)
 
         with request_authenticated_session() as req:
-            policy_definitions_function = req.get(api_endpoint)
+            policy_definitions = req.get(api_endpoint)
 
-        return policy_definitions_function
+        return policy_definitions
 
     def get_policy_definitions(self, subscription_id, policy_definition_name, authenticated_session=None):
         """

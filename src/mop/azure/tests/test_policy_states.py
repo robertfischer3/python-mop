@@ -1,3 +1,4 @@
+import json
 import os
 import unittest
 from configparser import ConfigParser
@@ -40,16 +41,23 @@ class TestOperationsPolicyStates(unittest.TestCase):
         """
         subscriptionId = self.config["DEFAULT"]["subscription_id"]
         scour_policy = ScourPolicyStatesOperations()
-        execute = scour_policy.policy_states_summarize_for_subscription(subscriptionId)
-        # Execute returns a method the can be executed anywhere more than once
-        result = execute()
-        self.assertIsNotNone(result)
+        response = scour_policy.policy_states_summarize_for_subscription(subscriptionId)
 
-        result2 = execute()
+        self.assertIsNotNone(response)
+
+        result2 = response.json()
         self.assertIsNotNone(result2)
 
-        values = result["value"]
+        if os.path.isfile("states_summarized_subscription.json"):
+            os.remove("states_summarized_subscription.json")
 
+        states_summarized_subscription = json.dumps(response.json(), indent=4, ensure_ascii=False)
+        with open("states_summarized_subscription.json", "w") as json_results:
+            json_results.write(states_summarized_subscription)
+
+        self.assertIsInstance(response.json(), dict)
+
+        values = result2["value"]
         self.assertIs(type(values), list)
 
     def test_policy_states_summarize_for_policy_definition(self):

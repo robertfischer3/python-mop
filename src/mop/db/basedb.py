@@ -1,10 +1,18 @@
 import urllib
-from sqlalchemy.ext.automap import automap_base
-from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
+from configparser import ConfigParser
+from mop.azure.utils.create_configuration import OPERATIONSPATH, change_dir, CONFVARIABLES, TESTVARIABLES
 
-class BaseDB:
-    def __init__(self, driver, database, dialect, password, server, user):
+
+class BaseDb:
+    def __init__(self, driver, database, dialect, password, server, user, configuration_file="CONFVARIABLES"):
+
+        with change_dir(OPERATIONSPATH):
+            self.config = ConfigParser()
+            if "CONFVARIABLES" in configuration_file:
+                self.config.read(CONFVARIABLES)
+            else:
+                self.config.read(TESTVARIABLES)
 
         self.driver = driver
         self.dialect = dialect
@@ -12,6 +20,8 @@ class BaseDB:
         self.database = database
         self.user = user
         self.password = password
+
+        self.get_db_engine()
 
     def get_db_engine(self):
         """
@@ -23,6 +33,14 @@ class BaseDB:
         :param user:
         :return: database engine
         """
+        """
+               :param database:
+               :param driver:
+               :param password:
+               :param server:
+               :param user:
+               :return: database engine
+               """
         connect_str = "DRIVER={driver};SERVER={server};DATABASE={database};UID=SA;PWD={password}".format(
             driver=self.driver,
             server=self.server,
@@ -34,17 +52,5 @@ class BaseDB:
         engine = create_engine(engine_str % params)
         self.engine = engine
         return self.engine
-
-    def get_db_model(self, engine):
-        """
-
-        :param engine:
-        :return:
-        """
-
-        Base = automap_base()
-        Base.prepare(engine, reflect=True)
-
-        return Base
 
 
