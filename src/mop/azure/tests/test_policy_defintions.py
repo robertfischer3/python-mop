@@ -1,3 +1,4 @@
+import json
 import os
 import unittest
 from configparser import ConfigParser
@@ -28,7 +29,7 @@ class TestPolicyDefinitionsCase(unittest.TestCase):
     def test_get_policy_definition(self):
 
         policy_definitions = PolicyDefinition()
-        result = policy_definitions.get_policy_definition('501541f7-f7e7-4cd6-868c-4190fdad3ac9')
+        result = policy_definitions.get_policy_definition('glbl-pr-sec-storage-https-pol')
 
         print(result)
 
@@ -44,6 +45,10 @@ class TestPolicyDefinitionsCase(unittest.TestCase):
         defintion_list_function = policy_definitions.policy_definitions_by_subscription_req(subscriptionId=subscriptionId)
 
         results = defintion_list_function.json()
+        policy_definitions = json.dumps(results, indent=4, ensure_ascii=False)
+        with open("test_policy_definitions_subscription.json", "w") as json_results:
+            json_results.write(policy_definitions)
+
         policies = results['value']
         for policy in policies:
             print(subscriptionId)
@@ -65,12 +70,20 @@ class TestPolicyDefinitionsCase(unittest.TestCase):
         managementGroupId = self.config['DEFAULT']['management_grp_id']
         search_category = self.config["FILTERS"]["policy_defition_category"]
 
+        response = self.policy_definition_list_by_management_group_category(managementGroupId)
 
+        policy_definitions = json.dumps(response.json(), indent=4, ensure_ascii=False)
+        with open("test_policy_definitions.json", "w") as json_results:
+            json_results.write(policy_definitions)
+
+        self.assertIsInstance(response.json(), dict)
+
+        self.assertEqual(True, True)
+
+    def policy_definition_list_by_management_group_category(self, managementGroupId):
         policy_definitions = PolicyDefinition()
-
-        defintion_list_function = policy_definitions.policy_definitions_list_by_management_group(managementGroupId)
-        results = defintion_list_function()
-
+        response = policy_definitions.policy_definitions_list_by_management_group(managementGroupId)
+        results = response.json()
         policies = results['value']
         for policy in policies:
             policy_type = policy['properties']['policyType']
@@ -83,14 +96,8 @@ class TestPolicyDefinitionsCase(unittest.TestCase):
                 policy_display_name = policy['properties']['displayName']
                 if policy['properties']['description']:
                     policy_description = policy['properties']['description']
+        return response
 
-        policy_definitions = json.dumps(response.json(), indent=4, ensure_ascii=False)
-        with open("test_assignments.json", "w") as json_results:
-            json_results.write(policy_definitions)
-
-        self.assertIsInstance(response.json(), dict)
-
-        self.assertEqual(True, True)
 
 if __name__ == '__main__':
     unittest.main()

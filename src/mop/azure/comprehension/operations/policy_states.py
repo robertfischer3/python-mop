@@ -1,6 +1,7 @@
 import os
 from configparser import ConfigParser
-
+import random
+from tenacity import retry, wait_random, stop_after_attempt
 from azure.mgmt.policyinsights.models import QueryFailureException
 from azure.mgmt.policyinsights.models import QueryOptions
 from azure.mgmt.policyinsights.policy_insights_client import PolicyInsightsClient
@@ -47,12 +48,13 @@ class ScourPolicyStatesOperations:
         return summarized_resource_group_function
 
     def policy_states_list_query_results_for_policy_definitions(self, subscription_id, policy_definition_name,
-                                                                authenticated_session = None,
+                                                                authenticated_session=None,
                                                                 policy_states_resource='latest'):
         try:
 
             api_endpoint = self.config["AZURESDK"]["policy_states_list_query_results_for_policy_definitions"]
-            api_endpoint = api_endpoint.format(subscriptionId=subscription_id, policyDefinitionName=policy_definition_name,
+            api_endpoint = api_endpoint.format(subscriptionId=subscription_id,
+                                               policyDefinitionName=policy_definition_name,
                                                policyStatesResource=policy_states_resource)
 
             query_results_for_policy_definitions_function = None
@@ -67,7 +69,6 @@ class ScourPolicyStatesOperations:
             pass
         finally:
             return query_results_for_policy_definitions_function
-
 
     def list_operations(self, subscriptionId):
         api_endpoint = self.config["AZURESDK"]["PolicyDefinitionsListBuiltin"]
@@ -131,6 +132,7 @@ class ScourPolicyStatesOperations:
 
         return policy_states_summary_subscription
 
+    @retry(wait=wait_random(min=1, max=2), stop=stop_after_attempt(4))
     def policy_states_summarize_for_subscription(self, subscription):
         """
 
@@ -140,20 +142,15 @@ class ScourPolicyStatesOperations:
         """
         api_endpoint = self.config["AZURESDK"]["policystatessummarizeforsubscription"]
         api_endpoint = api_endpoint.format(subscriptionId=subscription)
-        with request_authenticated_session() as req:
-            policy_states_summary_subscription = req.post(api_endpoint)
 
-        return policy_states_summary_subscription
+        with request_authenticated_session() as req:
+            policy_states_summary_subscription_response = req.post(api_endpoint)
+
+        return policy_states_summary_subscription_response
 
     def policy_states_summarize_for_subscription_compliant(
         self, subscriptionId, is_compliant="true"
     ):
-        """
-
-        :param subscription: str
-        :param is_compliant: bool
-        :return: function
-        """
 
         filter_condition = "IsCompliant eq {}".format(is_compliant)
 

@@ -4,7 +4,7 @@ import unittest
 from configparser import ConfigParser
 from dotenv import load_dotenv
 from mop.azure.connections import Connections
-from mop.azure.comprehension.resource_management.subscriptions import Subscriptions
+from mop.azure.comprehension.operations.subscriptions import Subscriptions
 from mop.azure.utils.create_configuration import (
     change_dir,
     OPERATIONSPATH,

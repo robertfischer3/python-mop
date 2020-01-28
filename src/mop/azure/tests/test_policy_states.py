@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 from mop.azure.analysis.policy_analysis import EvaluatePolicies
 from mop.azure.connections import Connections
-from mop.azure.operations.policy_states import ScourPolicyStatesOperations
+from mop.azure.comprehension.operations.policy_states import ScourPolicyStatesOperations
 from mop.azure.utils.create_configuration import (
     TESTVARIABLES,
     change_dir,

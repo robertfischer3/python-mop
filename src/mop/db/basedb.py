@@ -1,6 +1,9 @@
 import urllib
 from sqlalchemy import create_engine
 from configparser import ConfigParser
+
+from sqlalchemy.ext.automap import automap_base
+
 from mop.azure.utils.create_configuration import OPERATIONSPATH, change_dir, CONFVARIABLES, TESTVARIABLES
 
 
@@ -53,4 +56,15 @@ class BaseDb:
         self.engine = engine
         return self.engine
 
+    def get_db_model(self, engine):
+        """
+
+        :param engine:
+        :return:
+        """
+
+        Base = automap_base()
+        Base.prepare(engine, reflect=True)
+
+        return Base
 

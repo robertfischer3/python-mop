@@ -3,6 +3,7 @@ from configparser import ConfigParser
 import pandas as pd
 from azure.mgmt.resource.policy import PolicyClient
 from dotenv import load_dotenv
+from tenacity import retry, wait_random, stop_after_attempt
 
 from mop.azure.connections import request_authenticated_session, Connections
 from mop.azure.utils.create_configuration import (
@@ -21,6 +22,7 @@ class PolicyDefinition:
 
         self.credentials = Connections().get_authenticated_client()
 
+    @retry(wait=wait_random(min=1, max=2), stop=stop_after_attempt(4))
     def get_policy_definition(self, policy_definition_name):
 
         base_subscription_id = self.config['DEFAULT']['subscription_id']
@@ -45,13 +47,14 @@ class PolicyDefinition:
         with request_authenticated_session() as req:
             return req.post(api_endpoint)
 
+    @retry(wait=wait_random(min=1, max=2), stop=stop_after_attempt(4))
     def policy_definitions_by_subscription_req(self, subscriptionId):
         """
 
         :param subscriptionId:
         :return: Policy definitions by subscription request
         """
-        api_endpoint = self.config["AZURESDK"]["policydefintionsbysubscription"]
+        api_endpoint = self.config["AZURESDK"]["policy_definitions_list"]
         api_endpoint = api_endpoint.format(subscriptionId=subscriptionId)
 
         with request_authenticated_session() as req:
@@ -59,6 +62,7 @@ class PolicyDefinition:
 
         return policy_definitions
 
+    @retry(wait=wait_random(min=1, max=2), stop=stop_after_attempt(4))
     def get_policy_definitions(self, subscription_id, policy_definition_name, authenticated_session=None):
         """
 
@@ -90,6 +94,22 @@ class PolicyDefinition:
 
         if policy_definitions_function is not None and policy_definitions_function.status_code == 200:
             return policy_definitions_function.json
+        else:
+            return None
+
+    @retry(wait=wait_random(min=1, max=2), stop=stop_after_attempt(2))
+    def policy_definitions_list_by_management_group(self, management_grp, authenticated_session=None):
+
+        api_endpoint = self.config["AZURESDK"]["policy_definitions_list_by_management_group"]
+        api_endpoint = api_endpoint.format(managementGroupId=management_grp)
+
+        if authenticated_session:
+            response = authenticated_session.get(api_endpoint)
+        else:
+            with request_authenticated_session() as req:
+                response = req.get(api_endpoint)
+        if response is not None and response.status_code == 200:
+            return response
         else:
             return None
 

@@ -1,3 +1,4 @@
+import json
 import os
 from configparser import ConfigParser
 
@@ -7,48 +8,96 @@ from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import sessionmaker
 
-from mop.azure.connections import request_authenticated_session
-from mop.azure.operations.policy_states import ScourPolicyStatesOperations
+from mop.azure.comprehension.operations.policy_states import ScourPolicyStatesOperations
 from mop.azure.comprehension.resource_management.policy_definitions import PolicyDefinition
+from mop.azure.connections import request_authenticated_session
 from mop.azure.utils.create_configuration import CONFVARIABLES, change_dir, OPERATIONSPATH
 from mop.db.basedb import BaseDb
 
 
-class SummarizeSubscription():
+class PolicyCompliance(BaseDb):
 
-    def __init__(self):
+    def __init__(self, db_server_instance="instance01"):
         load_dotenv()
         with change_dir(OPERATIONSPATH):
             self.config = ConfigParser()
             self.config.read(CONFVARIABLES)
 
-        self.server = self.config['SQLSERVER']['server']
-        self.database = self.config['SQLSERVER']['database']
-        self.username = self.config['SQLSERVER']['username']
-        self.db_driver = self.config['SQLSERVER']['db_driver']
-        self.dialect = self.config['SQLSERVER']['dialect']
+        sql_instance = self.config['SQLSERVER'][db_server_instance]
+        sql_instance = json.loads(sql_instance.replace("\'", "\""))
+        self.server = sql_instance['server']
+        self.database = sql_instance['database']
+        self.username = sql_instance['username']
+        self.driver = sql_instance['db_driver']
+        self.dialect = sql_instance['dialect']
 
-        password = os.environ['DATABASEPWD']
+        self.password = os.environ['DATABASEPWD']
 
-        self.baseDb = BaseDb(server=self.server,
-                             database=self.database,
-                             user=self.username,
-                             driver=self.db_driver,
-                             dialect=self.dialect,
-                             password=password)
-
-        self.engine = self.baseDb.get_db_engine()
+        self.get_db_engine()
         self.Session = sessionmaker(bind=self.engine)
+
+    def reduce_policy_definition_list(self, subscription_list, metadata_category=None,
+                                                                      include=['BuiltIn', 'Static', 'Custom']):
+        models = self.get_db_model(self.engine)
+        DimPolicies = models.classes.policydefinitions
+
+        session = self.Session()
+        pf = session.query(DimPolicies).all()
+
+        policies_found = list()
+        for row in pf:
+            policies_found.append(row.policy_definition_name)
+
+        bulk_insert = list()
+
+        policy_definitions = PolicyDefinition()
+        for subscription_item in subscription_list:
+
+            response = policy_definitions.policy_definitions_by_subscription_req(subscription_item)
+
+            results = response.json()
+            policies = results['value']
+            for policy in policies:
+
+                policy_type = policy['properties']['policyType']
+
+                if policy_type in include:
+                    policy_name = policy['name']
+                    policy_category = ""
+                    if 'category' in policy['properties']['metadata']:
+                        policy_category = policy['properties']['metadata']['category']
+
+                        if metadata_category is not None and \
+                            'category' in policy['properties']['metadata'] and \
+                            metadata_category in policy_category:
+                            if 'description' in policy['properties']:
+                                policy_description = policy['properties']['description']
+                            else:
+                                policy_description = policy['properties']['displayName']
+                            print(policy['name'])
+                            policy = DimPolicies(policy_definition_name=policy['name'],
+                                                 policy_description=policy_description,
+                                                 policy_display_name=policy['properties']['displayName'],
+                                                 policy_type=policy['properties']['policyType'],
+                                                 metadata_category=policy['properties']['metadata']['category'])
+
+                            policies_found.append(policy.policy_definition_name)
+                            bulk_insert.append(policy)
+                        else:
+                            NotImplementedError
+
+            session.bulk_save_objects(bulk_insert)
+            session.commit()
 
     def summarize_query_results_for_policy_definitions(self):
 
-        models = self.baseDb.get_db_model(self.engine)
-        FactCompliance = models.classes.fact_compliance
-        SCIDimPolicies = models.classes.sci_dim_policies
+        models = self.get_db_model(self.engine)
+        FactCompliance = models.classes.factcompliance
+        DimPolicies = models.classes.policydefinitions
 
         session = self.Session()
         results = session.query(FactCompliance).all()
-        pf = session.query(SCIDimPolicies).all()
+        pf = session.query(DimPolicies).all()
 
         policies_found = list()
         for row in pf:
@@ -62,7 +111,8 @@ class SummarizeSubscription():
                 print(row.subscription_id, row.policy_definition_name)
                 if row.policy_definition_name not in policies_found:
                     with request_authenticated_session() as req:
-                        policy = PolicyDefinition().get_policy_definitions(row.subscription_id, row.policy_definition_name, req)
+                        policy = PolicyDefinition().get_policy_definitions(row.subscription_id,
+                                                                           row.policy_definition_name, req)
                         if policy:
                             policy_defintion = policy()
 
@@ -74,19 +124,14 @@ class SummarizeSubscription():
                             else:
                                 category = ''
                             print(displayName)
-                            policy = SCIDimPolicies(policy_definition_name=row.policy_definition_name,
-                                           policy_description=description,
-                                           policy_display_name=displayName,
-                                           policy_type=policyType,
-                                           policy_category=category)
+                            policy = DimPolicies(policy_definition_name=row.policy_definition_name,
+                                                 policy_description=description,
+                                                 policy_display_name=displayName,
+                                                 policy_type=policyType,
+                                                 metadata_category=category)
 
                             policies_found.append(policy.policy_definition_name)
                             bulk_insert.append(policy)
-
-
-
-        except ConnectionError:
-            pass
         finally:
             session.bulk_save_objects(bulk_insert)
             session.commit()
@@ -97,9 +142,9 @@ class SummarizeSubscription():
         # create a Session
         session = Session()
         # Execute returns a method the can be executed anywhere more than once
-        models = self.baseDb.get_db_model(self.engine)
+        models = self.get_db_model(self.engine)
         subscriptions = models.classes.subscriptions
-        FactCompliance = models.classes.fact_compliance
+        FactCompliance = models.classes.factcompliance
         session = self.Session()
         results = session.query(subscriptions).all()
 
@@ -158,6 +203,8 @@ def subscription_policy_compliance(subscriptionId):
     jmespath_results = jmespath.compile("[0].results.resourceDetails")
     scour_policy = ScourPolicyStatesOperations()
     response = scour_policy.policy_states_summarize_for_subscription(subscriptionId)
+    if response is None:
+        response = scour_policy.policy_states_summarize_for_subscription(subscriptionId)
 
     # Execute returns a method the can be executed anywhere more than once
     result = response.json()
