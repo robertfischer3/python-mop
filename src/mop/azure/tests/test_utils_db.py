@@ -10,7 +10,7 @@ import pyodbc
 from dotenv import load_dotenv
 
 from mop.azure.analysis.policy_compliance import subscription_policy_compliance
-from mop.azure.comprehension.resource_management.subscriptions import Subscriptions
+from mop.azure.comprehension.operations.subscriptions import Subscriptions
 from mop.azure.utils.create_configuration import change_dir, OPERATIONSPATH, TESTVARIABLES
 from mop.azure.utils.create_sqldb import SQLServerDatabase, DatbasePlugins
 from mop.db.basedb import BaseDb
@@ -105,7 +105,7 @@ class TestUtilDb(unittest.TestCase):
         engine = engine_list[0]
         management_grp = os.environ["MANGRP"]
 
-        subscriptions = Subscriptions().list_management_grp_subcriptions(management_grp=management_grp)
+        subscriptions = Subscriptions().dataframe_management_grp_subcriptions(management_grp=management_grp)
         subscriptions.reset_index(inplace=True)
         subscriptions.to_sql('subscriptions', index=False, con=engine, if_exists='append', chunksize=1000)
 

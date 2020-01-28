@@ -1,8 +1,8 @@
 from mop.azure.comprehension.resource_management.policy_definitions import (
     management_grp_policy_list_as_df,
 )
-from mop.azure.operations.policy_insights import PolicyInsights
-from mop.azure.comprehension.resource_management.subscriptions import Subscriptions
+from mop.azure.comprehension.operations.policy_insights import PolicyInsights
+from mop.azure.comprehension.operations.subscriptions import Subscriptions
 
 from dotenv import load_dotenv
 import pandas as pd
@@ -37,7 +37,7 @@ class EvaluatePolicies:
 
         subscriptions = Subscriptions(
             self.credentials
-        ).list_management_grp_subcriptions(management_grp=management_grp)
+        ).dataframe_management_grp_subcriptions(management_grp=management_grp)
         df = pd.DataFrame(
             data=subscriptions,
             columns=["subscription", "tenant_id", "subscription_name", "managment_grp"],
@@ -74,7 +74,7 @@ class EvaluatePolicies:
         :param management_grp:
         :return: pandas dataframe
         """
-        subscriptions = Subscriptions().list_management_grp_subcriptions(management_grp=management_grp)
+        subscriptions = Subscriptions().dataframe_management_grp_subcriptions(management_grp=management_grp)
         aggregate_df = None
 
         data_frame_list = list()

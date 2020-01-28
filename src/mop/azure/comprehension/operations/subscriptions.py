@@ -17,7 +17,7 @@ from mop.azure.connections import request_authenticated_session, Connections
 from mop.azure.utils.create_configuration import change_dir, OPERATIONSPATH, CONFVARIABLES
 
 
-class Subscriptions:
+class Subscriptions():
     def __init__(self):
         load_dotenv()
         self.credentials = Connections().get_authenticated_client()
@@ -79,7 +79,7 @@ class Subscriptions:
         cols = cols
         return cols
 
-    def list_management_grp_subcriptions(self, management_grp):
+    def dataframe_management_grp_subcriptions(self, management_grp):
         """
         https://docs.microsoft.com/en-us/python/api/azure-mgmt-managementgroups/azure.mgmt.managementgroups.operations.entities_operations.entitiesoperations?view=azure-python
         :param management_grp:
@@ -88,7 +88,6 @@ class Subscriptions:
 
         management_client = ManagementGroupsAPI(self.credentials)
         mngrp_subscriptions = management_client.entities.list(group_name=management_grp)
-
         """Here we want to only return subscriptions"""
         subscriptions_limited = [
             [
@@ -98,8 +97,7 @@ class Subscriptions:
                 management_grp,
             ]
             for subscriptions in mngrp_subscriptions
-            if "/providers/Microsoft.Management/managementGroups"
-               not in subscriptions.type
+            if "/subscriptions" in subscriptions.type
         ]
         df = pd.DataFrame(
             data=subscriptions_limited, columns=self.limited_subscription_columns()

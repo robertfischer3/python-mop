@@ -1,3 +1,4 @@
+import json
 import os
 import unittest
 from configparser import ConfigParser
@@ -68,8 +69,8 @@ class TestPolicyDefinitionsCase(unittest.TestCase):
 
         policy_definitions = PolicyDefinition()
 
-        defintion_list_function = policy_definitions.policy_definitions_list_by_management_group(managementGroupId)
-        results = defintion_list_function()
+        response = policy_definitions.policy_definitions_list_by_management_group(managementGroupId)
+        results = response.json()
 
         policies = results['value']
         for policy in policies:
@@ -85,7 +86,7 @@ class TestPolicyDefinitionsCase(unittest.TestCase):
                     policy_description = policy['properties']['description']
 
         policy_definitions = json.dumps(response.json(), indent=4, ensure_ascii=False)
-        with open("test_assignments.json", "w") as json_results:
+        with open("test_policy_definitions.json", "w") as json_results:
             json_results.write(policy_definitions)
 
         self.assertIsInstance(response.json(), dict)
