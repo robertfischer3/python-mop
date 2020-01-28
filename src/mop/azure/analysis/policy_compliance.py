@@ -8,9 +8,9 @@ from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import sessionmaker
 
-from mop.azure.connections import request_authenticated_session
 from mop.azure.comprehension.operations.policy_states import ScourPolicyStatesOperations
 from mop.azure.comprehension.resource_management.policy_definitions import PolicyDefinition
+from mop.azure.connections import request_authenticated_session
 from mop.azure.utils.create_configuration import CONFVARIABLES, change_dir, OPERATIONSPATH
 from mop.db.basedb import BaseDb
 
@@ -36,6 +36,59 @@ class PolicyCompliance(BaseDb):
         self.get_db_engine()
         self.Session = sessionmaker(bind=self.engine)
 
+    def reduce_policy_definition_list(self, subscription_list, metadata_category=None,
+                                                                      include=['BuiltIn', 'Static', 'Custom']):
+        models = self.get_db_model(self.engine)
+        DimPolicies = models.classes.policydefinitions
+
+        session = self.Session()
+        pf = session.query(DimPolicies).all()
+
+        policies_found = list()
+        for row in pf:
+            policies_found.append(row.policy_definition_name)
+
+        bulk_insert = list()
+
+        policy_definitions = PolicyDefinition()
+        for subscription_item in subscription_list:
+
+            response = policy_definitions.policy_definitions_by_subscription_req(subscription_item)
+
+            results = response.json()
+            policies = results['value']
+            for policy in policies:
+
+                policy_type = policy['properties']['policyType']
+
+                if policy_type in include:
+                    policy_name = policy['name']
+                    policy_category = ""
+                    if 'category' in policy['properties']['metadata']:
+                        policy_category = policy['properties']['metadata']['category']
+
+                        if metadata_category is not None and \
+                            'category' in policy['properties']['metadata'] and \
+                            metadata_category in policy_category:
+                            if 'description' in policy['properties']:
+                                policy_description = policy['properties']['description']
+                            else:
+                                policy_description = policy['properties']['displayName']
+                            print(policy['name'])
+                            policy = DimPolicies(policy_definition_name=policy['name'],
+                                                 policy_description=policy_description,
+                                                 policy_display_name=policy['properties']['displayName'],
+                                                 policy_type=policy['properties']['policyType'],
+                                                 metadata_category=policy['properties']['metadata']['category'])
+
+                            policies_found.append(policy.policy_definition_name)
+                            bulk_insert.append(policy)
+                        else:
+                            NotImplementedError
+
+            session.bulk_save_objects(bulk_insert)
+            session.commit()
+
     def summarize_query_results_for_policy_definitions(self):
 
         models = self.get_db_model(self.engine)
@@ -58,7 +111,8 @@ class PolicyCompliance(BaseDb):
                 print(row.subscription_id, row.policy_definition_name)
                 if row.policy_definition_name not in policies_found:
                     with request_authenticated_session() as req:
-                        policy = PolicyDefinition().get_policy_definitions(row.subscription_id, row.policy_definition_name, req)
+                        policy = PolicyDefinition().get_policy_definitions(row.subscription_id,
+                                                                           row.policy_definition_name, req)
                         if policy:
                             policy_defintion = policy()
 
@@ -71,18 +125,13 @@ class PolicyCompliance(BaseDb):
                                 category = ''
                             print(displayName)
                             policy = DimPolicies(policy_definition_name=row.policy_definition_name,
-                                           policy_description=description,
-                                           policy_display_name=displayName,
-                                           policy_type=policyType,
-                                           metadata_category=category)
+                                                 policy_description=description,
+                                                 policy_display_name=displayName,
+                                                 policy_type=policyType,
+                                                 metadata_category=category)
 
                             policies_found.append(policy.policy_definition_name)
                             bulk_insert.append(policy)
-
-
-
-        except ConnectionError:
-            pass
         finally:
             session.bulk_save_objects(bulk_insert)
             session.commit()
@@ -156,7 +205,6 @@ def subscription_policy_compliance(subscriptionId):
     response = scour_policy.policy_states_summarize_for_subscription(subscriptionId)
     if response is None:
         response = scour_policy.policy_states_summarize_for_subscription(subscriptionId)
-
 
     # Execute returns a method the can be executed anywhere more than once
     result = response.json()

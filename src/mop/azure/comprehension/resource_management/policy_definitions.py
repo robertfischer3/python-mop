@@ -54,7 +54,7 @@ class PolicyDefinition:
         :param subscriptionId:
         :return: Policy definitions by subscription request
         """
-        api_endpoint = self.config["AZURESDK"]["policydefintionsbysubscription"]
+        api_endpoint = self.config["AZURESDK"]["policy_definitions_list"]
         api_endpoint = api_endpoint.format(subscriptionId=subscriptionId)
 
         with request_authenticated_session() as req:
@@ -94,6 +94,22 @@ class PolicyDefinition:
 
         if policy_definitions_function is not None and policy_definitions_function.status_code == 200:
             return policy_definitions_function.json
+        else:
+            return None
+
+    @retry(wait=wait_random(min=1, max=2), stop=stop_after_attempt(2))
+    def policy_definitions_list_by_management_group(self, management_grp, authenticated_session=None):
+
+        api_endpoint = self.config["AZURESDK"]["policy_definitions_list_by_management_group"]
+        api_endpoint = api_endpoint.format(managementGroupId=management_grp)
+
+        if authenticated_session:
+            response = authenticated_session.get(api_endpoint)
+        else:
+            with request_authenticated_session() as req:
+                response = req.get(api_endpoint)
+        if response is not None and response.status_code == 200:
+            return response
         else:
             return None
 

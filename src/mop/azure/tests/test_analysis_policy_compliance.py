@@ -33,5 +33,9 @@ class TestAnalysisCompileCompliance(unittest.TestCase):
 
     def test_summarize_query_results_for_policy_definitions(self):
 
+        subscriptionId = self.config["DEFAULT"]["subscription_id"]
+
         summarize = PolicyCompliance()
+        summarize.reduce_policy_definition_list(subscription_list=[subscriptionId], metadata_category='Nestle Security',
+                                                                      include=['Custom'], )
         summarize.summarize_query_results_for_policy_definitions()

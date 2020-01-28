@@ -72,7 +72,7 @@ def create_baseline_configuration(generate_test=True):
         "policy_definitions_get":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}?api-version=2019-09-01",
         "get_policy_definition_by_name":"https://management.azure.com/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}?api-version=2019-09-01",
         "policy_assignments_list":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyAssignments?api-version=2019-09-01",
-        "policy_definitions_list_by_management_group":"https://management.azure.com/providers/Microsoft.Management/managementgroups/{managementGroupId}/providers/Microsoft.Authorization/policyDefinitions?api-version=2019-09-01"
+        "policy_definitions_list":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions?api-version=2019-09-01"
     }
 
     with atomic_write(CONFVARIABLES, "w") as configfile:
