@@ -50,6 +50,8 @@ def create_baseline_configuration(generate_test=True):
     }
     config["LOGGING"] = {"level": "DEBUG"}
     config["AZURESDK"] = {
+        "management_root":"https://management.azure.com",
+        "apiversion":"2019-09-01",
         "PolicyStatesSummarizeForPolicyDefinition": "https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01",
         "PolicyStatesSummarizeForSubscription": "https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01",
         "PolicyStatesSummarizeForSubscriptionFiltered": "https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01&$filter={filter}",

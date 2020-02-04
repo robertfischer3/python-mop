@@ -26,6 +26,14 @@ class TestPolicyDefinitionsCase(unittest.TestCase):
         # Do not use SA in production
         user = "SA"
 
+    def test_policy_definition_via_policyDefinitionId(self):
+
+        policy_definitions = PolicyDefinition()
+        policyDefinitionId = "/subscriptions/82746ea2-9f97-4313-b21a-e9bde3a0a241/providers/microsoft.authorization/policydefinitions/glbl-pr-sec-storage-auditencryption-pol"
+        response = policy_definitions.policy_definition_via_policyDefinitionId(policyDefinitionId)
+        json_response = response.json()
+        print(json_response)
+
     def test_get_policy_definition(self):
 
         policy_definitions = PolicyDefinition()

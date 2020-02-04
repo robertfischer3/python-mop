@@ -1,5 +1,7 @@
+import datetime
 import json
 import os
+import uuid
 from configparser import ConfigParser
 
 import jmespath
@@ -13,6 +15,7 @@ from mop.azure.comprehension.resource_management.policy_definitions import Polic
 from mop.azure.connections import request_authenticated_session
 from mop.azure.utils.create_configuration import CONFVARIABLES, change_dir, OPERATIONSPATH
 from mop.db.basedb import BaseDb
+
 
 
 class PolicyCompliance(BaseDb):
@@ -37,7 +40,7 @@ class PolicyCompliance(BaseDb):
         self.Session = sessionmaker(bind=self.engine)
 
     def reduce_policy_definition_list(self, subscription_list, metadata_category=None,
-                                                                      include=['BuiltIn', 'Static', 'Custom']):
+                                      include=['BuiltIn', 'Static', 'Custom']):
         models = self.get_db_model(self.engine)
         DimPolicies = models.classes.policydefinitions
 
@@ -89,7 +92,56 @@ class PolicyCompliance(BaseDb):
             session.bulk_save_objects(bulk_insert)
             session.commit()
 
+    def compile_sci(self):
+
+        management_grp = self.config['DEFAULT']['management_grp_id']
+        models = self.get_db_model(self.engine)
+        FactCompliance = models.classes.factcompliance
+        DimPolicies = models.classes.policydefinitions
+        CompiledSCI = models.classes.compiled_sci
+        Subscription = models.classes.subscriptions
+
+        session = self.Session()
+        utc = datetime.datetime.utcnow()
+        batch_uuid = uuid.uuid4()
+
+        join_query = session.query(FactCompliance, DimPolicies, Subscription).join(DimPolicies,
+                                                                                   FactCompliance.policy_definition_name == DimPolicies.policy_definition_name).outerjoin(
+            Subscription, FactCompliance.subscription_id == Subscription.subscription_id)
+
+        results = join_query.all()
+        bulk_insert = list()
+
+        for row in results:
+            compiled_sci = CompiledSCI(
+                tenant_id=row.factcompliance.tenant_id,
+                management_grp=management_grp,
+                subscription_id=row.factcompliance.subscription_id,
+                subscription_display_name = row.subscriptions.subscription_display_name,
+                policy_metadata_category = row.policydefinitions.metadata_category,
+                policy_definition_name=row.factcompliance.policy_definition_name,
+                policy_display_name=row.policydefinitions.policy_display_name,
+                policy_description=row.policydefinitions.policy_description,
+                policy_definition_id=row.factcompliance.policy_definition_id,
+                policy_compliant_resources=row.factcompliance.compliant,
+                policy_noncompliant_resources=row.factcompliance.noncompliant,
+                total_resources_measured=row.factcompliance.total_resources_measured,
+                percent_in_compliance=row.factcompliance.percent_compliant,
+                created=utc,
+                batch_uuid=batch_uuid
+            )
+
+            bulk_insert.append(compiled_sci)
+
+        session.bulk_save_objects(bulk_insert)
+        session.commit()
+
+
     def summarize_query_results_for_policy_definitions(self):
+        """
+        Compiles statistics concerning policy definitions using existing records in the factcompliance
+        :return:
+        """
 
         models = self.get_db_model(self.engine)
         FactCompliance = models.classes.factcompliance
@@ -115,9 +167,18 @@ class PolicyCompliance(BaseDb):
                                                                            row.policy_definition_name, req)
                         if policy:
                             policy_defintion = policy()
+                        else:
+                            if row.policy_definition_id:
+                                policy = PolicyDefinition().policy_definition_via_policyDefinitionId(
+                                    row.policy_definition_id)
+                                policy_defintion = policy.json()
 
+                        if policy:
                             displayName = policy_defintion['properties']['displayName']
-                            description = policy_defintion['properties']['description']
+                            if 'description' in policy_defintion['properties']:
+                                description = policy_defintion['properties']['description']
+                            else:
+                                description = policy_defintion['properties']['displayName']
                             policyType = policy_defintion['properties']['policyType']
                             if 'category' in policy_defintion['properties']['metadata']:
                                 category = policy_defintion['properties']['metadata']['category']
