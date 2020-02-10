@@ -45,6 +45,9 @@ class TestCaseUtils(unittest.TestCase):
             with open(fp) as f:
                 self.assertEqual(f.read(), "roger that")
 
+    def test_bob(self):
+        print('Hellow')
+
     def test_directory_context_manager(self):
         """Test the creation of the app.config.ini file and the test.app.config.ini"""
         subscription_id = os.environ["SUB"]
@@ -58,6 +61,7 @@ class TestConfigParser(unittest.TestCase):
     def setUp(self) -> None:
         load_dotenv()
         self.subscription = os.environ["SUB"]
+        self.assertTrue(True)
 
     def test_create_config_file_sections(self):
         tmpTESTVARIABLES = "tmp_" + TESTVARIABLES

@@ -48,6 +48,19 @@ class PolicyDefinition:
             return req.post(api_endpoint)
 
     @retry(wait=wait_random(min=1, max=2), stop=stop_after_attempt(4))
+    def policy_definition_via_policyDefinitionId(self, policyDefinitionId):
+        management_root = self.config['AZURESDK']['management_root']
+        api_version = self.config['AZURESDK']['apiversion']
+        api_endpoint = "{management_root}{policyDefinitionId}?api-version={api_version}".format(management_root=management_root,
+                                                                                    policyDefinitionId=policyDefinitionId,
+                                                                                    api_version=api_version)
+
+        with request_authenticated_session() as req:
+            policy_definitions = req.get(api_endpoint)
+
+        return policy_definitions
+
+    @retry(wait=wait_random(min=1, max=2), stop=stop_after_attempt(4))
     def policy_definitions_by_subscription_req(self, subscriptionId):
         """
 
@@ -112,6 +125,7 @@ class PolicyDefinition:
             return response
         else:
             return None
+
 
 def get_policydefinitions_management_grp(creds, base_subscription, management_grp):
     """
