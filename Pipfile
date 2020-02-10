@@ -11,6 +11,7 @@ azure = "*"
 jmespath = "*"
 openpyxl = "*"
 tenacity = "*"
+pyodbc = "*"
 
 [requires]
 python_version = "3.7"
