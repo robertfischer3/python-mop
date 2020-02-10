@@ -68,8 +68,10 @@ Installation
 ============
 
 ::
+This project makes heavy use of pipenv, which you likely need to install
+    pip3 install pipenv
 
-    pip install mop
+    pip3 install mop
 
 You can also install the in-development version with::
 
