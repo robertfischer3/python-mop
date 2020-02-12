@@ -15,7 +15,7 @@ from mop.azure.utils.create_configuration import (
 )
 
 
-class ScourPolicyStatesOperations:
+class PolicyStates:
     def __init__(self):
         load_dotenv()
         with change_dir(OPERATIONSPATH):
@@ -38,7 +38,28 @@ class ScourPolicyStatesOperations:
         with request_authenticated_session() as req:
             return req.post(api_endpoint).json
 
+    def policy_states_summarize_for_policy_definition(self, subscriptionId, policyDefinitionName):
+        """
+        Summarizes policy states for the subscription level policy definition.
+        https://docs.microsoft.com/en-us/rest/api/policy-insights/policystates/summarizeforpolicydefinition#code-try-0
+        :param subscriptionId:
+        :param policyDefinitionName:
+        :return:
+        """
+        api_endpoint = self.config["AZURESDK"]["policy_states_summarize_for_policy_definition"]
+        api_endpoint = api_endpoint.format(subscriptionId=subscriptionId, policyDefinitionName=policyDefinitionName)
+
+        with request_authenticated_session() as req:
+            policy_states_summarize_for_policy_definition = req.post(api_endpoint)
+
+        return policy_states_summarize_for_policy_definition
+
     def policy_states_summarize_for_resourcegroup(self, subscriptionId):
+        """
+
+        :param subscriptionId:
+        :return:
+        """
         api_endpoint = self.config["AZURESDK"]["policystatessummarizeforresourcegroup"]
         api_endpoint = api_endpoint.format(subscriptionId=subscriptionId)
 
@@ -91,24 +112,6 @@ class ScourPolicyStatesOperations:
         with request_authenticated_session() as req:
             resource_policy_function = req.post(api_endpoint).json
         return resource_policy_function
-
-    def policy_states_summarize_for_policy_definition(
-        self, subscription, policyDefinitionName
-    ):
-        """
-
-        :param subscription:
-        :param policyDefinitionName:
-        :return: function
-        """
-        api_endpoint = os.environ["PolicyStatesSummarizeForPolicyDefinition"]
-        api_endpoint = api_endpoint.format(
-            subscriptionId=subscription, policyDefinitionName=policyDefinitionName
-        )
-        with request_authenticated_session() as req:
-            policy_def_builtin = req.post(api_endpoint).json
-
-        return policy_def_builtin
 
     def policy_states_summarize_for_subscription_query(self):
         """

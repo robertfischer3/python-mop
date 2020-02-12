@@ -46,13 +46,13 @@ def create_baseline_configuration(generate_test=True):
     }
     }
     config["FILTERS"] = {
-        "policy_defition_category": "Security"
+        "policy_defition_category": "Security",
+        "policy_definition_name_01": ""
     }
     config["LOGGING"] = {"level": "DEBUG"}
     config["AZURESDK"] = {
         "management_root":"https://management.azure.com",
         "apiversion":"2019-09-01",
-        "PolicyStatesSummarizeForPolicyDefinition": "https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01",
         "PolicyStatesSummarizeForSubscription": "https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01",
         "PolicyStatesSummarizeForSubscriptionFiltered": "https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01&$filter={filter}",
         "Subscriptions": "https://management.azure.com/subscriptions?api-version=2019-06-01",
@@ -74,7 +74,10 @@ def create_baseline_configuration(generate_test=True):
         "policy_definitions_get":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}?api-version=2019-09-01",
         "get_policy_definition_by_name":"https://management.azure.com/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}?api-version=2019-09-01",
         "policy_assignments_list":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyAssignments?api-version=2019-09-01",
-        "policy_definitions_list":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions?api-version=2019-09-01"
+        "policy_definitions_list":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions?api-version=2019-09-01",
+        "policy_definitions_create_or_update":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}?api-version=2019-09-01",
+        "policy_assignments_create":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyAssignments/{policyAssignmentName}?api-version=2019-09-01",
+        "policy_states_summarize_for_policy_definition":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01"
     }
 
     with atomic_write(CONFVARIABLES, "w") as configfile:

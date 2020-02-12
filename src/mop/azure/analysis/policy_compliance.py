@@ -10,12 +10,11 @@ from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import sessionmaker
 
-from mop.azure.comprehension.operations.policy_states import ScourPolicyStatesOperations
+from mop.azure.comprehension.operations.policy_states import PolicyStates
 from mop.azure.comprehension.resource_management.policy_definitions import PolicyDefinition
 from mop.azure.connections import request_authenticated_session
 from mop.azure.utils.create_configuration import CONFVARIABLES, change_dir, OPERATIONSPATH
 from mop.db.basedb import BaseDb
-
 
 
 class PolicyCompliance(BaseDb):
@@ -117,8 +116,8 @@ class PolicyCompliance(BaseDb):
                 tenant_id=row.factcompliance.tenant_id,
                 management_grp=management_grp,
                 subscription_id=row.factcompliance.subscription_id,
-                subscription_display_name = row.subscriptions.subscription_display_name,
-                policy_metadata_category = row.policydefinitions.metadata_category,
+                subscription_display_name=row.subscriptions.subscription_display_name,
+                policy_metadata_category=row.policydefinitions.metadata_category,
                 policy_definition_name=row.factcompliance.policy_definition_name,
                 policy_display_name=row.policydefinitions.policy_display_name,
                 policy_description=row.policydefinitions.policy_description,
@@ -136,6 +135,127 @@ class PolicyCompliance(BaseDb):
         session.bulk_save_objects(bulk_insert)
         session.commit()
 
+    def save_subscription_policies_by_category(self, category, subscription_id=None):
+
+        policy_definitions = PolicyDefinition()
+
+        # create a configured "Session" class
+
+        # create a Session
+        session = Session()
+        # Execute returns a method the can be executed anywhere more than once
+        models = self.get_db_model(self.engine)
+        subscriptions = models.classes.subscriptions
+        DimPolicies = models.classes.policydefinitions
+
+        session = self.Session()
+        results = session.query(subscriptions).all()
+
+        bulk_insert = list()
+        batch_uuid = uuid.uuid4()
+
+
+        created = datetime.datetime.utcnow()
+
+        try:
+
+            for row in results:
+
+                policy_definition_list = policy_definitions.list_subscription_policy_definition_by_category(
+                    subscriptionId=row.subscription_id,
+                    category=category)
+                if policy_definition_list is None:
+                    continue
+
+                for policy in policy_definition_list:
+
+                    policy['name']
+                    if policy:
+                        displayName = policy['properties']['displayName']
+                        if 'description' in policy['properties']:
+                            description = policy['properties']['description']
+                        else:
+                            description = policy['properties']['displayName']
+                        policyType = policy['properties']['policyType']
+                        if 'category' in policy['properties']['metadata']:
+                            category = policy['properties']['metadata']['category']
+                        else:
+                            category = ''
+
+                        policy = DimPolicies(policy_definition_name=policy['name'],
+                                             policy_description=description,
+                                             policy_display_name=displayName,
+                                             policy_type=policyType,
+                                             subscriptionid=row.subscription_id,
+                                             metadata_category=category,
+                                             created=created,
+                                             modified=created,
+                                             batch_uuid=batch_uuid)
+
+                        bulk_insert.append(policy)
+
+        finally:
+            session.bulk_save_objects(bulk_insert)
+            session.commit()
+
+    def summarize_fact_compliance(self, category, subscription_id=None):
+
+        policy_states = PolicyStates()
+        # create a configured "Session" class
+
+        # create a Session
+        # Execute returns a method the can be executed anywhere more than once
+        models = self.get_db_model(self.engine)
+        FactCompliance = models.classes.factcompliance
+        DimPolicies = models.classes.policydefinitions
+        subscriptions = models.classes.subscriptions
+        session = self.Session()
+
+        session = self.Session()
+        if subscription_id is not None:
+            subscriptions_list = session.query(subscriptions).filter_by(subscription_id=subscription_id)
+        else:
+            subscriptions_list = session.query(subscriptions).all()
+
+        jmespath_expression = jmespath.compile("value[*]")
+
+        for subscription in subscriptions_list:
+            tenant_id = subscription.tenant_id
+            subscription_id = subscription.subscription_id
+            subcription_policies = session.query(DimPolicies).filter(DimPolicies.subscriptionid == subscription_id)
+
+            print(subscription_id)
+            if subcription_policies:
+                for sub_policy in subcription_policies:
+                    policy_states_of_definition = policy_states.policy_states_summarize_for_policy_definition(
+                        subscriptionId=subscription_id,
+                        policyDefinitionName=sub_policy.policy_definition_name).json()
+
+                    if 'value' in policy_states_of_definition:
+                        values = policy_states_of_definition['value']
+                        for value in values:
+                            if 'results' in  value:
+                                policy_state_results = value['results']
+
+                                if "resourceDetails" in policy_state_results:
+                                    resourceDetails = policy_state_results["resourceDetails"]
+                                    if resourceDetails is not None and len(resourceDetails) > 0:
+                                        print("resourceDetails found!")
+                                    else:
+                                        print("resourceDetails not found")
+                                if "policyDetails" in policy_state_results:
+                                    policyDetails = policy_state_results["policyDetails"]
+                                    if policyDetails is not None and len(policyDetails) > 0:
+                                        print("policyDetails found!")
+                                    else:
+                                        print("policyDetails not found")
+                                if 'policyAssignments' in policy_states_of_definition['value']:
+                                    policyAssignments_list = policy_states_of_definition['value']['policyAssignments']
+
+                                    if policyAssignments_list is not None and len(policyAssignments_list) > 0:
+                                        print("policyAssignments found!")
+                                    else:
+                                        print("policyAssignments not found")
 
     def summarize_query_results_for_policy_definitions(self):
         """
@@ -197,7 +317,7 @@ class PolicyCompliance(BaseDb):
             session.bulk_save_objects(bulk_insert)
             session.commit()
 
-    def summarize_subscriptions(self, management_grp):
+    def summarize_subscriptions(self, tenant_id, management_grp):
         # create a configured "Session" class
 
         # create a Session
@@ -217,6 +337,7 @@ class PolicyCompliance(BaseDb):
                 bulk_insert = list()
                 for index, dfrow in df.iterrows():
                     fact = FactCompliance(
+                        tenant_id=tenant_id,
                         subscription_id=row.subscription_id,
                         policy_definition_name=dfrow['policy_definition_name'],
                         policy_definition_id=dfrow['policy_definition_id'],
@@ -262,7 +383,7 @@ def subscription_policy_compliance(subscriptionId):
 
     jmespath_expression = jmespath.compile("value[*].policyAssignments[*].policyDefinitions[*]")
     jmespath_results = jmespath.compile("[0].results.resourceDetails")
-    scour_policy = ScourPolicyStatesOperations()
+    scour_policy = PolicyStates()
     response = scour_policy.policy_states_summarize_for_subscription(subscriptionId)
     if response is None:
         response = scour_policy.policy_states_summarize_for_subscription(subscriptionId)
