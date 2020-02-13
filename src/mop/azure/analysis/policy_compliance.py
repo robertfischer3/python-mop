@@ -198,7 +198,7 @@ class PolicyCompliance(BaseDb):
             session.bulk_save_objects(bulk_insert)
             session.commit()
 
-    def summarize_fact_compliance(self, category, subscription_id=None):
+    def summarize_fact_compliance(self, category, policy_definition_name_list, subscription_id=None):
 
         policy_states = PolicyStates()
         # create a configured "Session" class
@@ -207,9 +207,7 @@ class PolicyCompliance(BaseDb):
         # Execute returns a method the can be executed anywhere more than once
         models = self.get_db_model(self.engine)
         FactCompliance = models.classes.factcompliance
-        DimPolicies = models.classes.policydefinitions
         subscriptions = models.classes.subscriptions
-        session = self.Session()
 
         session = self.Session()
         if subscription_id is not None:
@@ -217,45 +215,39 @@ class PolicyCompliance(BaseDb):
         else:
             subscriptions_list = session.query(subscriptions).all()
 
-        jmespath_expression = jmespath.compile("value[*]")
-
         for subscription in subscriptions_list:
             tenant_id = subscription.tenant_id
-            subscription_id = subscription.subscription_id
-            subcription_policies = session.query(DimPolicies).filter(DimPolicies.subscriptionid == subscription_id)
+            for policy_definition_name in policy_definition_name_list:
 
-            print(subscription_id)
-            if subcription_policies:
-                for sub_policy in subcription_policies:
-                    policy_states_of_definition = policy_states.policy_states_summarize_for_policy_definition(
-                        subscriptionId=subscription_id,
-                        policyDefinitionName=sub_policy.policy_definition_name).json()
+                policy_states_of_definition = policy_states.policy_states_summarize_for_policy_definition(
+                    subscriptionId=subscription_id,
+                    policyDefinitionName=policy_definition_name).json()
 
-                    if 'value' in policy_states_of_definition:
-                        values = policy_states_of_definition['value']
-                        for value in values:
-                            if 'results' in  value:
-                                policy_state_results = value['results']
+                if 'value' in policy_states_of_definition:
+                    values = policy_states_of_definition['value']
+                    for value in values:
+                        if 'results' in  value:
+                            policy_state_results = value['results']
 
-                                if "resourceDetails" in policy_state_results:
-                                    resourceDetails = policy_state_results["resourceDetails"]
-                                    if resourceDetails is not None and len(resourceDetails) > 0:
-                                        print("resourceDetails found!")
-                                    else:
-                                        print("resourceDetails not found")
-                                if "policyDetails" in policy_state_results:
-                                    policyDetails = policy_state_results["policyDetails"]
-                                    if policyDetails is not None and len(policyDetails) > 0:
-                                        print("policyDetails found!")
-                                    else:
-                                        print("policyDetails not found")
-                                if 'policyAssignments' in policy_states_of_definition['value']:
-                                    policyAssignments_list = policy_states_of_definition['value']['policyAssignments']
+                            if "resourceDetails" in policy_state_results:
+                                resourceDetails = policy_state_results["resourceDetails"]
+                                if resourceDetails is not None and len(resourceDetails) > 0:
+                                    print("resourceDetails found!")
+                                else:
+                                    print("resourceDetails not found")
+                            if "policyDetails" in policy_state_results:
+                                policyDetails = policy_state_results["policyDetails"]
+                                if policyDetails is not None and len(policyDetails) > 0:
+                                    print("policyDetails found!")
+                                else:
+                                    print("policyDetails not found")
+                            if 'policyAssignments' in policy_states_of_definition['value']:
+                                policyAssignments_list = policy_states_of_definition['value']['policyAssignments']
 
-                                    if policyAssignments_list is not None and len(policyAssignments_list) > 0:
-                                        print("policyAssignments found!")
-                                    else:
-                                        print("policyAssignments not found")
+                                if policyAssignments_list is not None and len(policyAssignments_list) > 0:
+                                    print("policyAssignments found!")
+                                else:
+                                    print("policyAssignments not found")
 
     def summarize_query_results_for_policy_definitions(self):
         """

@@ -26,10 +26,14 @@ class PolicyDefinition:
         self.credentials = Connections().get_authenticated_client()
 
     @retry(wait=wait_random(min=1, max=2), stop=stop_after_attempt(4))
-    def get_policy_definition(self, policy_definition_name):
+    def get_policy_definition(self, subscription_id, policy_definition_name):
+        """
 
-        base_subscription_id = self.config['DEFAULT']['subscription_id']
-        policy_client = PolicyClient(self.credentials, subscription_id=base_subscription_id)
+        :param subscription_id:
+        :param policy_definition_name:
+        :return:
+        """
+        policy_client = PolicyClient(self.credentials, subscription_id=subscription_id)
         policy_definition = policy_client.policy_definitions.get(policy_definition_name)
 
         return policy_definition
