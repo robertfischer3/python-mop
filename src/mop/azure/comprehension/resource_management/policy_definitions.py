@@ -1,3 +1,6 @@
+import glob
+import json
+import os
 from configparser import ConfigParser
 
 import pandas as pd
@@ -23,13 +26,166 @@ class PolicyDefinition:
         self.credentials = Connections().get_authenticated_client()
 
     @retry(wait=wait_random(min=1, max=2), stop=stop_after_attempt(4))
-    def get_policy_definition(self, policy_definition_name):
+    def get_policy_definition(self, subscription_id, policy_definition_name):
+        """
 
-        base_subscription_id = self.config['DEFAULT']['subscription_id']
-        policy_client = PolicyClient(self.credentials, subscription_id=base_subscription_id)
+        :param subscription_id:
+        :param policy_definition_name:
+        :return:
+        """
+        policy_client = PolicyClient(self.credentials, subscription_id=subscription_id)
         policy_definition = policy_client.policy_definitions.get(policy_definition_name)
 
         return policy_definition
+
+    retry(wait=wait_random(min=1, max=3), stop=stop_after_attempt(4))
+    def create_subscription_policy_definition(self, subscriptionId):
+
+        definitions = self.get_json_policy_definitions()
+        for p in definitions:
+            with open(p["policy_definition_path"], "r") as pol_def_file:
+                pol_def_contents = pol_def_file.read()
+                results = self.create_policy_definition(
+                    subscriptionId=subscriptionId,
+                    policy_definition_name=p["policy_defintion_name"],
+                    policy_definition_body=pol_def_contents)
+        return results
+
+    def get_json_policy_definitions(self):
+        paths = list()
+        if os.getcwd().endswith("tests"):
+            search_path = "../comprehension/resource_management/policydefinitions"
+        else:
+            search_path = "policydefinitions"
+        with change_dir(search_path):
+            for file in glob.glob("*.json"):
+                policy_definition_path = os.path.abspath(file)
+                base_name = os.path.basename(policy_definition_path)
+                policy_defintion_name = os.path.splitext(base_name)[0]
+                if not os.path.isfile(policy_definition_path):
+                    raise FileNotFoundError
+                paths.append(
+                    {"policy_defintion_name": policy_defintion_name, "policy_definition_path": policy_definition_path})
+        return paths
+
+    def create_subscription_policy_assignment(self, subscriptionId):
+        definitions = self.get_json_policy_definitions()
+
+        policy_assignments = list()
+        for p in definitions:
+            if p["policy_defintion_name"]:
+                policy_definition_name = p["policy_defintion_name"]
+                api_endpoint = self.config["AZURESDK"]["policy_definitions_get"]
+                api_endpoint = api_endpoint.format(subscriptionId=subscriptionId,
+                                                   policyDefinitionName=policy_definition_name)
+
+                with request_authenticated_session() as req:
+                    policy_definitions = req.get(api_endpoint)
+                if policy_definitions.status_code == 200:
+                    policy_definition_json = policy_definitions.json()
+                    if policy_definition_json["name"]:
+                        id = policy_definition_json["id"]
+                        displayName = policy_definition_json["name"]
+                        description = policy_definition_json["name"]
+                        createdBy = ""
+                        category = None
+
+                        if policy_definition_json["properties"]:
+                            if policy_definition_json["properties"]["displayName"]:
+                                displayName = policy_definition_json["properties"]["displayName"]
+                            if policy_definition_json["properties"]["description"]:
+                                description = policy_definition_json["properties"]["description"]
+                            if policy_definition_json["properties"]["metadata"]:
+                                createdBy = policy_definition_json["properties"]["metadata"]["createdBy"]
+                                if "metadata" in policy_definition_json["properties"] and "category" in \
+                                    policy_definition_json["properties"]["metadata"]:
+                                    category = policy_definition_json["properties"]["metadata"]["category"]
+
+                            policy_assignment_request_body = {
+                                "properties": {
+                                    "displayName": displayName,
+                                    "description": description,
+                                    "metadata": {
+                                        "assignedBy": createdBy
+                                    },
+                                    "policyDefinitionId": id
+                                }
+                            }
+                            if category:
+                                policy_assignment_request_body["properties"]["metadata"]["category"] = category
+
+                            policy_assignment = self.create_policy_assignment(subscriptionId=subscriptionId,
+                                                                              policyAssignmentName=
+                                                                              policy_definition_json["name"],
+                                                                              policyAssignmentBody=policy_assignment_request_body)
+
+
+                            if policy_assignment:
+                                    policy_assignments.append(policy_assignment)
+
+        return policy_assignments
+
+    def list_subscription_policy_definition_by_category(self, subscriptionId, category):
+        """
+        Finds the policies within a category
+        :param subscriptionId:
+        :param category:
+        :return:
+        """
+
+        defintion_list_function = self.policy_definitions_by_subscription_req(
+            subscriptionId=subscriptionId)
+
+        results = defintion_list_function.json()
+        category_policies = list()
+        if 'value' not in results:
+            return None
+
+        policies = results['value']
+        for policy in policies:
+            if 'category' in policy['properties']['metadata']:
+                if policy['properties']['metadata']['category'] in category:
+                    category_policies.append(policy)
+
+        return category_policies
+
+    @retry(wait=wait_random(min=1, max=2), stop=stop_after_attempt(2))
+    def create_policy_assignment(self, subscriptionId, policyAssignmentName, policyAssignmentBody):
+        """
+
+        :param subscriptionId:
+        :param policy_definition_name:
+        :param policy_definition_body:
+        :return:
+        """
+        api_endpoint = self.config["AZURESDK"]["policy_assignments_create"]
+        api_endpoint = api_endpoint.format(subscriptionId=subscriptionId, policyAssignmentName=policyAssignmentName)
+        headers = {'content-type': 'application/json'}
+
+        with request_authenticated_session() as req:
+            policy_assignment = req.put(api_endpoint,
+                                        data=json.dumps(policyAssignmentBody, indent=4, ensure_ascii=False),
+                                        headers=headers)
+
+        return policy_assignment
+
+    @retry(wait=wait_random(min=1, max=2), stop=stop_after_attempt(2))
+    def create_policy_definition(self, subscriptionId, policy_definition_name, policy_definition_body):
+        """
+
+        :param subscriptionId:
+        :param policy_definition_name:
+        :param policy_definition_body:
+        :return:
+        """
+        api_endpoint = self.config["AZURESDK"]["policy_definitions_create_or_update"]
+        api_endpoint = api_endpoint.format(subscriptionId=subscriptionId, policyDefinitionName=policy_definition_name)
+        headers = {'content-type': 'application/json'}
+
+        with request_authenticated_session() as req:
+            policy_definitions = req.put(api_endpoint, data=policy_definition_body, headers=headers)
+
+        return policy_definitions
 
     def policyinsights_generic_req(self, api_endpoint, *args):
         """
@@ -51,9 +207,10 @@ class PolicyDefinition:
     def policy_definition_via_policyDefinitionId(self, policyDefinitionId):
         management_root = self.config['AZURESDK']['management_root']
         api_version = self.config['AZURESDK']['apiversion']
-        api_endpoint = "{management_root}{policyDefinitionId}?api-version={api_version}".format(management_root=management_root,
-                                                                                    policyDefinitionId=policyDefinitionId,
-                                                                                    api_version=api_version)
+        api_endpoint = "{management_root}{policyDefinitionId}?api-version={api_version}".format(
+            management_root=management_root,
+            policyDefinitionId=policyDefinitionId,
+            api_version=api_version)
 
         with request_authenticated_session() as req:
             policy_definitions = req.get(api_endpoint)

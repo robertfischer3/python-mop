@@ -1,20 +1,22 @@
+import logging
 from configparser import ConfigParser
 
-from azure.mgmt.subscription import SubscriptionClient
-from azure.mgmt.managementgroups import ManagementGroupsAPI
+import jmespath
 import pandas as pd
+from azure.mgmt.managementgroups import ManagementGroupsAPI
 from azure.mgmt.resource.policy import PolicyClient
 from azure.mgmt.resource.policy.models import PolicyAssignment
-
 # TODO change refernce to latest
 from azure.mgmt.resource.policy.v2018_03_01.models.error_response_py3 import (
     ErrorResponseException,
 )
+from azure.mgmt.subscription import SubscriptionClient
 from dotenv import load_dotenv
-import os
 
 from mop.azure.connections import request_authenticated_session, Connections
 from mop.azure.utils.create_configuration import change_dir, OPERATIONSPATH, CONFVARIABLES
+
+log = logging.getLogger(__name__)
 
 
 class Subscriptions():
@@ -27,6 +29,9 @@ class Subscriptions():
             self.config = ConfigParser()
             self.config.read(CONFVARIABLES)
 
+        logging_level = int(self.config['LOGGING']['level'])
+        logging.basicConfig(level=logging_level)
+
     def list_subscriptions(self):
         """
 
@@ -36,12 +41,47 @@ class Subscriptions():
 
         return subscriptions
 
+    def get_tags_values(self, subscriptionId, *tag_name):
+        """
+        Accepts any range of tags
+        :param subscriptionId:
+        :param tag_name:
+        :return:
+        """
+
+        management_root = self.config['AZURESDK']['management_root']
+        api_version = self.config['AZURESDK']['apiversion']
+        api_endpoint = "{management_root}/subscriptions/{subscriptionId}/tagNames?api-version={api_version}".format(
+            management_root=management_root,
+            subscriptionId=subscriptionId,
+            api_version=api_version)
+
+        with request_authenticated_session() as req:
+            tags = req.get(api_endpoint)
+
+        if tags.status_code == 200:
+            json_doc = tags.json()
+
+            tag_dictionary = {}
+
+            for tag in tag_name:
+                query = "value[?tagName == '{}'].values[0].tagValue".format(tag)
+                tag_value = jmespath.search(query, json_doc)
+                log.debug("Tag, you are it")
+                if tag_value == []:
+                    tag_dictionary[tag] = ''
+                else:
+                    tag_value = tag_value[0]
+                tag_dictionary[tag] = tag_value
+
+            return tag_dictionary
+
     def get_subscription(self, subscription_id):
 
         subscription = self.subscription_client.subscriptions.get(subscription_id)
         return subscription
 
-    def subscription_list_displayname_id(self):
+    def list_displayname_and_id(self):
         """
         Returns a list of subscriptions available to the credential
         :rtype: object
@@ -56,7 +96,7 @@ class Subscriptions():
         ]
         return subscription_list
 
-    def get_subscription(self, subscription_id):
+    def get(self, subscription_id):
         """
         Gets detailed information on an individual subscription
         :rtype: object
@@ -121,7 +161,6 @@ class Subscriptions():
             config = ConfigParser()
             config.read(CONFVARIABLES)
 
-
         management_client = ManagementGroupsAPI(self.credentials)
         mngrp_subscriptions = management_client.entities.list(group_name=management_grp)
 
@@ -184,3 +223,15 @@ class Subscriptions():
                                     policy.display_name,
                                 )
                             )
+
+
+def limited_subscription_columns(
+
+):
+    cols = [
+        "subscription_id",
+        "tenant_id",
+        "subscription_display_name",
+        "management_grp",
+    ]
+    return cols

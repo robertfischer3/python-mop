@@ -41,6 +41,7 @@ def request_authenticated_session():
             session.close()
 
 
+
 class Connections:
     """
     Azure connection provides various means to aquire access to an Azure Tenant.  So named since AWS, and Google Cloud

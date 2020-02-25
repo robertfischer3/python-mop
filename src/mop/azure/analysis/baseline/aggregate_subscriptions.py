@@ -4,6 +4,7 @@ import uuid
 from configparser import ConfigParser
 
 from dotenv import load_dotenv
+from sqlalchemy import text
 from sqlalchemy.orm import sessionmaker
 from mop.azure.comprehension.operations.subscriptions import Subscriptions
 from mop.azure.utils.create_configuration import change_dir, OPERATIONSPATH, CONFVARIABLES
@@ -30,6 +31,7 @@ class AggregateSubscriptions(BaseDb):
 
         self.Session = sessionmaker(bind=self.engine)
 
+
     def get_managment_grp_subscriptions(self, management_grp):
         subscriptions = Subscriptions()
         return subscriptions.dataframe_management_grp_subcriptions(management_grp)
@@ -38,3 +40,13 @@ class AggregateSubscriptions(BaseDb):
 
         subscriptions_dataframe['batch_uuid'] = uuid.uuid4()
         subscriptions_dataframe.to_sql('subscriptions', self.engine, if_exists='append')
+
+    def list_subscriptions(self):
+        """
+        Returns all subscriptions in the database
+        :return:
+        """
+        models = self.get_db_model(self.engine)
+        subscriptions = models.classes.subscriptions
+        session = self.Session()
+        return session.query(subscriptions).all()
