@@ -1,7 +1,8 @@
 import logging
+import os
 import unittest
 from configparser import ConfigParser
-import os
+
 from dotenv import load_dotenv
 
 from mop.azure.analysis.policy_compliance import PolicyCompliance
@@ -23,16 +24,13 @@ class TestAnalysisCompileCompliance(unittest.TestCase):
             self.config.read(TESTVARIABLES)
 
     def test_summarize_subscriptions(self):
-
         management_grp = self.config["DEFAULT"]["management_grp_id"]
         tenant_id = self.config['DEFAULT']['tenant_id']
 
         summarize = PolicyCompliance()
-        summarize.summarize_subscriptions(management_grp)
-
+        summarize.summarize_subscriptions(tenant_id, management_grp)
 
     def test_summarize_query_results_for_policy_definitions(self):
-
         subscriptionId = self.config["DEFAULT"]["subscription_id"]
 
         summarize = PolicyCompliance()
@@ -41,3 +39,13 @@ class TestAnalysisCompileCompliance(unittest.TestCase):
     def test_compiled_sci(self):
         summarize = PolicyCompliance()
         summarize.compile_sci()
+
+    def test_save_subscription_policies_by_category(self):
+        category = self.config["FILTERS"]["policy_defition_category"]
+        subscriptionId = self.config["DEFAULT"]["subscription_id"]
+
+        d = "'glbl-pr-sec-sqldb-dblevelauditsetting-pol', 'glbl-pr-sec-sqldb-encryption-pol', 'glbl-pr-sec-sqldb-threatdetection-pol', 'glbl-pr-sec-sqlserver-serverlevelauditsetting-pol', 'glbl-pr-sec-sqlserver-serverlevelthreatdetection-pol','glbl-pr-sec-sqlserver-noaadadmin-pol'"
+        policy_definition_name_list = ['glbl-pr-sec-sqldb-dblevelauditsetting-pol']
+        summarize = PolicyCompliance()
+        # summarize.save_subscription_policies_by_category(category=category)
+        summarize.summarize_fact_compliance(category=category, policy_definition_name_list=policy_definition_name_list)

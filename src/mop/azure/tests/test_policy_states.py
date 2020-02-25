@@ -7,8 +7,8 @@ import pluggy
 from dotenv import load_dotenv
 
 from mop.azure.analysis.policy_analysis import EvaluatePolicies
+from mop.azure.comprehension.operations.policy_states import PolicyStates
 from mop.azure.connections import Connections
-from mop.azure.comprehension.operations.policy_states import ScourPolicyStatesOperations
 from mop.azure.utils.create_configuration import (
     TESTVARIABLES,
     change_dir,
@@ -36,11 +36,11 @@ class TestOperationsPolicyStates(unittest.TestCase):
 
     def test_policy_states_summarize_for_subscription_sdk(self):
         """
-        Testing the policy_states_summarize_for_subscription methods on the class ScourPolicyStatesOperations
+        Testing the policy_states_summarize_for_subscription methods on the class PolicyStates
         :return:
         """
         subscriptionId = self.config["DEFAULT"]["subscription_id"]
-        scour_policy = ScourPolicyStatesOperations()
+        scour_policy = PolicyStates()
         response = scour_policy.policy_states_summarize_for_subscription(subscriptionId)
 
         self.assertIsNotNone(response)
@@ -61,8 +61,20 @@ class TestOperationsPolicyStates(unittest.TestCase):
         self.assertIs(type(values), list)
 
     def test_policy_states_summarize_for_policy_definition(self):
+        subscriptionId = self.config["DEFAULT"]["subscription_id"]
+        policy_definition_name = self.config["FILTERS"]["policy_definition_name_01"]
 
-        scour_policy = ScourPolicyStatesOperations()
+        policy_states = PolicyStates()
+        policy_states_list = policy_states.policy_states_summarize_for_policy_definition(subscriptionId=subscriptionId,
+                                                                                               policyDefinitionName=policy_definition_name)
+        results = policy_states_list.json()
+        self.assertEqual(policy_states_list.status_code, 200)
+
+
+
+    def test_policy_states_summarize_for_subscription_query(self):
+
+        scour_policy = PolicyStates()
         execute = scour_policy.policy_states_summarize_for_subscription_query()
         results = execute()
 
@@ -70,29 +82,29 @@ class TestOperationsPolicyStates(unittest.TestCase):
         self.assertIsNotNone(results)
 
     def test_policy_states_list_query_results_for_management_group(self):
-        scour_policy = ScourPolicyStatesOperations()
+        scour_policy = PolicyStates()
 
         execute = scour_policy.policy_states_list_query_results_for_management_group('global-legacy001-mg')
         results = execute()
         print(results)
 
     def test_policy_states_list_query_results_for_policy_definition(self):
-        scour_policy = ScourPolicyStatesOperations()
+        scour_policy = PolicyStates()
 
         subscription_id = self.config["DEFAULT"]["subscription_id"]
 
         execute = scour_policy.policy_states_list_query_results_for_policy_definitions(subscription_id,
-                                                                                       'glbl-pr-sec-storage-auditvnet-pol')
+                                                                                       'glbl-pr-sec-sqldb-threatdetection-pol')
         results = execute()
         print(results)
 
     def test_policy_states_summarize_for_subscription(self):
         """
-        Testing the policy_states_summarize_for_subscription methods on the class ScourPolicyStatesOperations
+        Testing the policy_states_summarize_for_subscription methods on the class PolicyStates
         :return:
         """
         subscription = self.config["DEFAULT"]["subscription_id"]
-        scour_policy = ScourPolicyStatesOperations()
+        scour_policy = PolicyStates()
         execute = scour_policy.policy_states_summarize_for_subscription(subscription)
         # Execute returns a method the can be executed anywhere more than once
         result = execute()
@@ -129,7 +141,7 @@ class TestOperationsPolicyStates(unittest.TestCase):
         :return:
         """
         subscriptionId = os.environ["SUB"]
-        polic_states = ScourPolicyStatesOperations()
+        polic_states = PolicyStates()
         api_config_key = "https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01"
         # The policystates_genericfunc has no way of learning the named string format parameters
         # a simple replace makes the URL a workable generic call to the API

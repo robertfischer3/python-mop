@@ -4,6 +4,7 @@ import uuid
 from configparser import ConfigParser
 
 from dotenv import load_dotenv
+from sqlalchemy import text
 from sqlalchemy.orm import sessionmaker
 from mop.azure.comprehension.operations.subscriptions import Subscriptions
 from mop.azure.utils.create_configuration import change_dir, OPERATIONSPATH, CONFVARIABLES

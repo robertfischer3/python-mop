@@ -38,6 +38,31 @@ class PolicyCompliance(BaseDb):
         self.get_db_engine()
         self.Session = sessionmaker(bind=self.engine)
 
+    def determine_compliance_ratio(self, resourceDetails):
+        compliance_dict = dict()
+        if len(resourceDetails) <= 2:
+            complianceState = resourceDetails[0]
+            if complianceState['complianceState'] in 'compliant':
+                compliance_dict["compliant"] = int(complianceState["count"])
+            else:
+                compliance_dict["noncompliant"] = int(complianceState["count"])
+        if len(resourceDetails) == 2:
+            complianceState = resourceDetails[1]
+            if complianceState['complianceState'] in 'compliant':
+                compliance_dict["compliant"] = int(complianceState["count"])
+            else:
+                compliance_dict["noncompliant"] = int(complianceState["count"])
+        if not 'compliant' in compliance_dict:
+            compliance_dict["compliant"] = 0
+        if not 'noncompliant' in compliance_dict:
+            compliance_dict['noncompliant'] = 0
+
+        compliance_dict['total_resources_measured'] = compliance_dict["compliant"] + compliance_dict['noncompliant']
+        compliance_dict['percent_compliant'] = compliance_dict["compliant"] / compliance_dict[
+            'total_resources_measured'] * 100
+
+        return compliance_dict
+
     def reduce_policy_definition_list(self, subscription_list, metadata_category=None,
                                       include=['BuiltIn', 'Static', 'Custom']):
         models = self.get_db_model(self.engine)
@@ -154,7 +179,6 @@ class PolicyCompliance(BaseDb):
         bulk_insert = list()
         batch_uuid = uuid.uuid4()
 
-
         created = datetime.datetime.utcnow()
 
         try:
@@ -200,7 +224,11 @@ class PolicyCompliance(BaseDb):
 
     def summarize_fact_compliance(self, category, policy_definition_name_list, subscription_id=None):
 
+        jmespath_expression = jmespath.compile("value[*].policyAssignments[*].policyDefinitions[*]")
         policy_states = PolicyStates()
+        batch_uuid = uuid.uuid4()
+        created = datetime.datetime.utcnow()
+
         # create a configured "Session" class
 
         # create a Session
@@ -217,37 +245,43 @@ class PolicyCompliance(BaseDb):
 
         for subscription in subscriptions_list:
             tenant_id = subscription.tenant_id
+            print(subscription.subscription_id)
+
             for policy_definition_name in policy_definition_name_list:
 
                 policy_states_of_definition = policy_states.policy_states_summarize_for_policy_definition(
-                    subscriptionId=subscription_id,
+                    subscriptionId=subscription.subscription_id,
                     policyDefinitionName=policy_definition_name).json()
 
-                if 'value' in policy_states_of_definition:
-                    values = policy_states_of_definition['value']
-                    for value in values:
-                        if 'results' in  value:
-                            policy_state_results = value['results']
+                jmes_result = jmespath_expression.search(policy_states_of_definition)
 
-                            if "resourceDetails" in policy_state_results:
-                                resourceDetails = policy_state_results["resourceDetails"]
-                                if resourceDetails is not None and len(resourceDetails) > 0:
-                                    print("resourceDetails found!")
-                                else:
-                                    print("resourceDetails not found")
-                            if "policyDetails" in policy_state_results:
-                                policyDetails = policy_state_results["policyDetails"]
-                                if policyDetails is not None and len(policyDetails) > 0:
-                                    print("policyDetails found!")
-                                else:
-                                    print("policyDetails not found")
-                            if 'policyAssignments' in policy_states_of_definition['value']:
-                                policyAssignments_list = policy_states_of_definition['value']['policyAssignments']
+                if jmespath_expression is None or jmes_result is None or jmes_result[0] is None or len(jmes_result[0]) == 0:
+                    continue
+                else:
+                    # flatten results
+                    policyresults = jmes_result[0][0]
+                    bulk_insert = list()
+                    for policyresult in policyresults:
+                        policy_definition_name = str(policyresult['policyDefinitionId']).split('/')[-1]
+                        resourceDetails = jmespath.search('results.resourceDetails[*]', policyresult)
 
-                                if policyAssignments_list is not None and len(policyAssignments_list) > 0:
-                                    print("policyAssignments found!")
-                                else:
-                                    print("policyAssignments not found")
+                        compliance_ratio = self.determine_compliance_ratio(resourceDetails)
+
+                        fact = FactCompliance(
+                            tenant_id=tenant_id,
+                            subscription_id=subscription.subscription_id,
+                            policy_definition_name=policy_definition_name,
+                            compliant=compliance_ratio['compliant'],
+                            noncompliant=compliance_ratio['noncompliant'],
+                            total_resources_measured=compliance_ratio['total_resources_measured'],
+                            percent_compliant=compliance_ratio['percent_compliant'],
+                            batch_uuid=batch_uuid,
+                            created=created,
+                            modified=created)
+                        bulk_insert.append(fact)
+
+                    session.bulk_save_objects(bulk_insert)
+                    session.commit()
 
     def summarize_query_results_for_policy_definitions(self):
         """

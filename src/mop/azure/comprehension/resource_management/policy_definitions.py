@@ -38,6 +38,7 @@ class PolicyDefinition:
 
         return policy_definition
 
+    retry(wait=wait_random(min=1, max=3), stop=stop_after_attempt(4))
     def create_subscription_policy_definition(self, subscriptionId):
 
         definitions = self.get_json_policy_definitions()
@@ -69,6 +70,8 @@ class PolicyDefinition:
 
     def create_subscription_policy_assignment(self, subscriptionId):
         definitions = self.get_json_policy_definitions()
+
+        policy_assignments = list()
         for p in definitions:
             if p["policy_defintion_name"]:
                 policy_definition_name = p["policy_defintion_name"]
@@ -94,7 +97,8 @@ class PolicyDefinition:
                                 description = policy_definition_json["properties"]["description"]
                             if policy_definition_json["properties"]["metadata"]:
                                 createdBy = policy_definition_json["properties"]["metadata"]["createdBy"]
-                                if policy_definition_json["properties"]["metadata"]["category"]:
+                                if "metadata" in policy_definition_json["properties"] and "category" in \
+                                    policy_definition_json["properties"]["metadata"]:
                                     category = policy_definition_json["properties"]["metadata"]["category"]
 
                             policy_assignment_request_body = {
@@ -111,14 +115,15 @@ class PolicyDefinition:
                                 policy_assignment_request_body["properties"]["metadata"]["category"] = category
 
                             policy_assignment = self.create_policy_assignment(subscriptionId=subscriptionId,
-                                                          policyAssignmentName=policy_definition_json["name"],
-                                                          policyAssignmentBody=policy_assignment_request_body)
-                            if not policy_assignment:
-                                return None
+                                                                              policyAssignmentName=
+                                                                              policy_definition_json["name"],
+                                                                              policyAssignmentBody=policy_assignment_request_body)
 
-                    return policy_assignment
-                else:
-                    return None
+
+                            if policy_assignment:
+                                    policy_assignments.append(policy_assignment)
+
+        return policy_assignments
 
     def list_subscription_policy_definition_by_category(self, subscriptionId, category):
         """
@@ -158,7 +163,9 @@ class PolicyDefinition:
         headers = {'content-type': 'application/json'}
 
         with request_authenticated_session() as req:
-            policy_assignment = req.put(api_endpoint, data=json.dumps(policyAssignmentBody, indent=4, ensure_ascii=False), headers=headers)
+            policy_assignment = req.put(api_endpoint,
+                                        data=json.dumps(policyAssignmentBody, indent=4, ensure_ascii=False),
+                                        headers=headers)
 
         return policy_assignment
 

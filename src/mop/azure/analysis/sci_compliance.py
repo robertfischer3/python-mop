@@ -16,7 +16,7 @@ class SCI():
             self.config.read(CONFVARIABLES)
 
 
-        self.subscriptions = Subscriptions().subscription_list_displayname_id()
+        self.subscriptions = Subscriptions().list_displayname_and_id()
         self.resource_cls = Resource()
 
     def get_resources(self):
