@@ -205,8 +205,9 @@ class SQLServerDatabase(BaseDb):
             Column("tenant_id", String(36)),
             Column("management_grp", String(36)),
             #The current subscription display name is 64 in most Azure documentation currently
-            Column("business_owner_tag", sqltypes.NVARCHAR(256)),
-            Column("technical_owner_tag", sqltypes.NVARCHAR(256)),
+            Column("functional_owner", sqltypes.NVARCHAR(256)),
+            Column("billing_contact", sqltypes.NVARCHAR(256)),
+            Column("financial_owner", sqltypes.NVARCHAR(256)),
             Column("TIMESTAMP", DateTime, default=datetime.datetime.utcnow),
             Column("modified", DateTime, onupdate=datetime.datetime.now),
             Column("batch_uuid", String(36)),
@@ -221,8 +222,9 @@ class SQLServerDatabase(BaseDb):
             Column("tenant_id", String(36)),
             Column("management_grp", String(36)),
             # The current subscription display name is 64 in most Azure documentation currently
-            Column("business_owner_tag", sqltypes.NVARCHAR(256)),
-            Column("technical_owner_tag", sqltypes.NVARCHAR(256)),
+            Column("functional_owner", sqltypes.NVARCHAR(256)),
+            Column("billing_contact", sqltypes.NVARCHAR(256)),
+            Column("financial_owner", sqltypes.NVARCHAR(256)),
             Column("TIMESTAMP", DateTime, default=datetime.datetime.utcnow),
             Column("modified", DateTime, onupdate=datetime.datetime.now),
             Column("batch_uuid", String(36)),

@@ -41,7 +41,7 @@ class Subscriptions():
 
         return subscriptions
 
-    def get_tags_values(self, subscriptionId, *tag_name):
+    def get_tags_dictionary(self, subscriptionId):
         """
         Accepts any range of tags
         :param subscriptionId:
@@ -49,32 +49,39 @@ class Subscriptions():
         :return:
         """
 
-        management_root = self.config['AZURESDK']['management_root']
-        api_version = self.config['AZURESDK']['apiversion']
-        api_endpoint = "{management_root}/subscriptions/{subscriptionId}/tagNames?api-version={api_version}".format(
-            management_root=management_root,
-            subscriptionId=subscriptionId,
-            api_version=api_version)
-
-        with request_authenticated_session() as req:
-            tags = req.get(api_endpoint)
+        tags = self.get_tags(subscriptionId)
 
         if tags.status_code == 200:
             json_doc = tags.json()
 
             tag_dictionary = {}
 
-            for tag in tag_name:
-                query = "value[?tagName == '{}'].values[0].tagValue".format(tag)
-                tag_value = jmespath.search(query, json_doc)
-                log.debug("Tag, you are it")
-                if tag_value == []:
-                    tag_dictionary[tag] = ''
-                else:
-                    tag_value = tag_value[0]
-                tag_dictionary[tag] = tag_value
+            if json_doc != {'value':[]}:
+                query_tag_names = "value[*].tagName"
+                tag_names = jmespath.search(query_tag_names, json_doc)
+
+                for tag_name in tag_names:
+                    query_tag_values = "value[?tagName == '{}'].values[*].tagValue".format(tag_name)
+                    tag_values = jmespath.search(query_tag_values, json_doc)
+
+                    tag_dictionary[tag_name] = tag_values[0]
+
+                return tag_dictionary
+            else:
+                tag_dictionary['no_tags_present'] = [subscriptionId]
 
             return tag_dictionary
+
+    def get_tags(self, subscriptionId):
+        management_root = self.config['AZURESDK']['management_root']
+        api_version = self.config['AZURESDK']['apiversion']
+        api_endpoint = "{management_root}/subscriptions/{subscriptionId}/tagNames?api-version={api_version}".format(
+            management_root=management_root,
+            subscriptionId=subscriptionId,
+            api_version=api_version)
+        with request_authenticated_session() as req:
+            tags = req.get(api_endpoint)
+        return tags
 
     def get_subscription(self, subscription_id):
 

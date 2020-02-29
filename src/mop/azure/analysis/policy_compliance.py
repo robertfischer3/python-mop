@@ -164,10 +164,6 @@ class PolicyCompliance(BaseDb):
 
         policy_definitions = PolicyDefinition()
 
-        # create a configured "Session" class
-
-        # create a Session
-        session = Session()
         # Execute returns a method the can be executed anywhere more than once
         models = self.get_db_model(self.engine)
         subscriptions = models.classes.subscriptions

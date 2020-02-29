@@ -54,7 +54,7 @@ class TestResourcesSubscriptions(unittest.TestCase):
 
         subscription_id = self.config['DEFAULT']['subscription_id']
 
-        subscription_tags =  Subscriptions().get_tags_values(subscription_id, 'functional owner', 'financial owner', 'billing contact')
+        subscription_tags =  Subscriptions().get_tags_dictionary(subscription_id, 'functional owner', 'financial owner', 'billing contact')
         self.assertEqual(len(subscription_tags) == 3, True)
 
     def test_subscription_list_displayname_id(self):
