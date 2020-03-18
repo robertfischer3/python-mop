@@ -41,14 +41,16 @@ class PolicyDefinition:
     retry(wait=wait_random(min=1, max=3), stop=stop_after_attempt(4))
     def create_subscription_policy_definition(self, subscriptionId):
 
+        results = {}
         definitions = self.get_json_policy_definitions()
         for p in definitions:
             with open(p["policy_definition_path"], "r") as pol_def_file:
                 pol_def_contents = pol_def_file.read()
-                results = self.create_policy_definition(
+                result = self.create_policy_definition(
                     subscriptionId=subscriptionId,
                     policy_definition_name=p["policy_defintion_name"],
                     policy_definition_body=pol_def_contents)
+                results[p["policy_defintion_name"]] = result
         return results
 
     def get_json_policy_definitions(self):
@@ -72,6 +74,8 @@ class PolicyDefinition:
         definitions = self.get_json_policy_definitions()
 
         policy_assignments = list()
+        rest_api_responses = list()
+
         for p in definitions:
             if p["policy_defintion_name"]:
                 policy_definition_name = p["policy_defintion_name"]
@@ -80,9 +84,11 @@ class PolicyDefinition:
                                                    policyDefinitionName=policy_definition_name)
 
                 with request_authenticated_session() as req:
-                    policy_definitions = req.get(api_endpoint)
-                if policy_definitions.status_code == 200:
-                    policy_definition_json = policy_definitions.json()
+                    policy_definition = req.get(api_endpoint)
+                    rest_api_responses.append(policy_definition)
+
+                if policy_definition.status_code == 200:
+                    policy_definition_json = policy_definition.json()
                     if policy_definition_json["name"]:
                         id = policy_definition_json["id"]
                         displayName = policy_definition_json["name"]
@@ -123,7 +129,7 @@ class PolicyDefinition:
                             if policy_assignment:
                                     policy_assignments.append(policy_assignment)
 
-        return policy_assignments
+        return policy_assignments, rest_api_responses
 
     def list_subscription_policy_definition_by_category(self, subscriptionId, category):
         """

@@ -21,5 +21,8 @@ class TestAggregateSubscriptions(TestCase):
 
     def test_aggregate_tags(self):
         aggregate_subcription_tags = AggregateSubscriptions()
-        tag_list = aggregate_subcription_tags.list_tags()
-        aggregate_subcription_tags.save_tags(tag_list)
+        aggregate_subcription_tags.compile_tags()
+
+    def test_update_subscription_owners(self):
+        aggregate_subcription_tags = AggregateSubscriptions()
+        aggregate_subcription_tags.identify_subscription_owners()

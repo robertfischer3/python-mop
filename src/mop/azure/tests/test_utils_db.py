@@ -49,7 +49,7 @@ class TestUtilDb(unittest.TestCase):
         tables = pm.hook.create_database_tables(
             server=self.server,
             database=self.database,
-            user=self.user,
+            user=self.username,
             password=self.password,
             driver=self.db_driver,
         )
@@ -157,7 +157,7 @@ class TestUtilDb(unittest.TestCase):
         baseDb = BaseDb(
             server=self.server,
             database=self.database,
-            user=self.username,
+            username=self.username,
             password=self.password,
             driver=self.db_driver,
             dialect=self.dialect,
@@ -181,7 +181,7 @@ class TestUtilDb(unittest.TestCase):
         # server = 'myserver,port' # to specify an alternate port
         server = "tcp:172.17.0.1"
         database = "TestDB2"
-        username = "SA"
+        username = self.username
         password = self.password
         cnxn = pyodbc.connect(
             "DRIVER={ODBC Driver 17 for SQL Server};SERVER="

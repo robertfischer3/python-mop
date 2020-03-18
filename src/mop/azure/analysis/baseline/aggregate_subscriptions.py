@@ -54,10 +54,16 @@ class AggregateSubscriptions(BaseDb):
         session = self.Session()
         return session.query(subscriptions).all()
 
-    def list_tags(self):
+    def compile_tags(self):
+        '''
+        Storing subscription tags in a database table
+        '''
         # create a configured "Session" class
-
         # create a Session
+
+        batch_uuid = uuid.uuid4()
+        created = datetime.datetime.utcnow()
+
         session = self.Session()
         # Execute returns a method the can be executed anywhere more than once
         models = self.get_db_model(self.engine)
@@ -65,6 +71,7 @@ class AggregateSubscriptions(BaseDb):
         subscription_facade = Subscriptions()
 
         subscription_cls = models.classes.subscriptions
+        subscription_tags2 = models.classes.subscription_tags2
         subscriptions = session.query(subscription_cls).all()
 
         subscription_tag_list = list()
@@ -75,26 +82,19 @@ class AggregateSubscriptions(BaseDb):
                 for tag_name in tag_dictionary:
                     print(tag_name, tag_dictionary[tag_name])
                     for tag_value in tag_dictionary[tag_name]:
-                        subscription_tag_list.append([subscription.subscription_id, tag_name, tag_value])
+                        tag = subscription_tags2(
+                            subscription_id=subscription.subscription_id,
+                            tag_name=tag_name,
+                            tag_value=tag_value,
+                            created=created,
+                            batch_uuid=batch_uuid
+                        )
+                    subscription_tag_list.append(tag)
 
-        return subscription_tag_list
+        session.bulk_save_objects(subscription_tag_list)
+        session.commit()
 
-    def save_tags(self, subscription_tag_list):
-        """
-
-        :param subscription_tag_list:
-        :return:
-        """
-        batch_uuid = uuid.uuid4()
-        created = datetime.datetime.utcnow()
-
-        df = pd.DataFrame(subscription_tag_list, columns=['subscription_id', 'tag_name', 'tag_value'])
-        df['batch_uuid'] = batch_uuid
-        df['created'] = created
-        df.reset_index(inplace=True)
-        df.to_sql('subscription_tags', index=False, con=self.engine, if_exists='append', chunksize=1000)
-
-    def list_tag_name_cloud(self):
+    def identify_subscription_owners(self):
         # create a Session
         session = self.Session()
         # Execute returns a method the can be executed anywhere more than once
@@ -103,7 +103,87 @@ class AggregateSubscriptions(BaseDb):
         subscription_facade = Subscriptions()
 
         subscription_cls = models.classes.subscriptions
+        subscription_tags2_cls = models.classes.subscription_tags2
         subscriptions = session.query(subscription_cls).all()
-        tag_name_cloud = {}
+
+        technical_owner_dict = self.get_filtered_tags(session, subscription_tags2_cls, 'tech%')
+        financial_owner_dict = self.get_filtered_tags(session, subscription_tags2_cls, 'financial%')
+        functional_owner_dict = self.get_filtered_tags(session, subscription_tags2_cls, 'function%')
+        market_dict = self.get_filtered_tags(session, subscription_tags2_cls, 'market')
+
         for subscription in subscriptions:
-            tag_dictionary = subscription_facade.get_tags_dictionary(subscription.subscription_id)
+            if subscription.subscription_id in functional_owner_dict:
+                subscription.functional_owner = functional_owner_dict[subscription.subscription_id]
+
+            if subscription.subscription_id in financial_owner_dict:
+                subscription.financial_owner = financial_owner_dict[subscription.subscription_id]
+
+            if subscription.subscription_id in technical_owner_dict:
+                subscription.billing_contact = technical_owner_dict[subscription.subscription_id]
+
+            if subscription.subscription_id in market_dict:
+                subscription.market = market_dict[subscription.subscription_id]
+
+        session.bulk_save_objects(subscriptions, update_changed_only=True)
+        session.commit()
+
+    def get_filtered_tags(self, session, subscription_tags2_cls, like_filter):
+        filtered_tags = session.query(subscription_tags2_cls).filter(subscription_tags2_cls.tag_name.ilike(like_filter))
+
+        if filtered_tags:
+            filtered_tags_dict = {}
+
+            for subscription in filtered_tags:
+                if subscription.subscription_id not in filtered_tags_dict:
+                    filtered_tags_dict[subscription.subscription_id] = subscription.tag_value[:511]
+                else:
+                    filtered_tags_dict[subscription.subscription_id] = (filtered_tags_dict[
+                                                                            subscription.subscription_id] + ';' + subscription.tag_value)[
+                                                                       :511]
+        return filtered_tags_dict
+
+    def get_functional_owner_tags(self, session, subscription_tags2_cls):
+        functional_tags = session.query(subscription_tags2_cls).filter(
+            subscription_tags2_cls.tag_name.ilike('function%'))
+
+        if functional_tags:
+            functional_owner_dict = {}
+
+            for subscription in functional_tags:
+                if subscription.subscription_id not in functional_owner_dict:
+                    functional_owner_dict[subscription.subscription_id] = subscription.tag_value[:511]
+                else:
+                    functional_owner_dict[subscription.subscription_id] = (functional_owner_dict[
+                                                                               subscription.subscription_id] + ';' + subscription.tag_value)[
+                                                                          :511]
+        return functional_owner_dict
+
+    def get_financial_owner_tags(self, session, subscription_tags2_cls):
+        financial_tags = session.query(subscription_tags2_cls).filter(
+            subscription_tags2_cls.tag_name.ilike('financial%'))
+
+        if financial_tags:
+            financial_owner_dict = {}
+
+            for subscription in financial_tags:
+                if subscription.subscription_id not in financial_owner_dict:
+                    financial_owner_dict[subscription.subscription_id] = subscription.tag_value[:511]
+                else:
+                    financial_owner_dict[subscription.subscription_id] = (financial_owner_dict[
+                                                                              subscription.subscription_id] + ';' + subscription.tag_value)[
+                                                                         :511]
+        return financial_owner_dict
+
+    def get_technical_owner_tags(self, session, subscription_tags2_cls):
+        technical_tags = session.query(subscription_tags2_cls).filter(subscription_tags2_cls.tag_name.ilike('tech%'))
+        if technical_tags:
+            technical_owner_dict = {}
+
+            for subscription in technical_tags:
+                if subscription.subscription_id not in technical_owner_dict:
+                    technical_owner_dict[subscription.subscription_id] = subscription.tag_value[:511]
+                else:
+                    technical_owner_dict[subscription.subscription_id] = (technical_owner_dict[
+                                                                              subscription.subscription_id] + ';' + subscription.tag_value)[
+                                                                         :511]
+        return technical_owner_dict

@@ -116,6 +116,47 @@ class PolicyCompliance(BaseDb):
             session.bulk_save_objects(bulk_insert)
             session.commit()
 
+    def register_policy_definition(self, subscription_id, policy_definition_name):
+        policy_definitions = PolicyDefinition()
+
+        models = self.get_db_model(self.engine)
+        FactCompliance = models.classes.factcompliance
+        DimPolicies = models.classes.policydefinitions
+
+        session = self.Session()
+        pf = session.query(DimPolicies).all()
+
+        policies_found = list()
+
+        policyDefinitionId = "/subscriptions/{subscription_id}/providers/Microsoft.Authorization/policyDefinitions/{policy_definition_name}".format(
+            subscription_id=subscription_id, policy_definition_name=policy_definition_name)
+        response = policy_definitions.policy_definition_via_policyDefinitionId(policyDefinitionId)
+        json_response = response.json()
+        if response.status_code >= 200 and response.status_code <= 299:
+            policy_definition = json_response
+
+            if policy_definition:
+                displayName = policy_definition['properties']['displayName']
+                if 'description' in policy_definition['properties']:
+                    description = policy_definition['properties']['description']
+                else:
+                    description = policy_definition['properties']['displayName']
+                policyType = policy_definition['properties']['policyType']
+                if 'category' in policy_definition['properties']['metadata']:
+                    category = policy_definition['properties']['metadata']['category']
+                else:
+                    category = ''
+                print(displayName)
+
+            policy = DimPolicies(policy_definition_name=policy_definition_name,
+                                 policy_description=description,
+                                 policy_display_name=displayName,
+                                 policy_type=policyType,
+                                 metadata_category=category)
+            session.add(policy)
+            session.commit()
+
+
     def compile_sci(self):
 
         management_grp = self.config['DEFAULT']['management_grp_id']
@@ -142,6 +183,10 @@ class PolicyCompliance(BaseDb):
                 management_grp=management_grp,
                 subscription_id=row.factcompliance.subscription_id,
                 subscription_display_name=row.subscriptions.subscription_display_name,
+                technical_owner_tag=row.subscriptions.functional_owner,
+                business_owner_tag=row.subscriptions.billing_contact,
+                financial_owner=row.subscriptions.financial_owner,
+                market=row.subscriptions.market,
                 policy_metadata_category=row.policydefinitions.metadata_category,
                 policy_definition_name=row.factcompliance.policy_definition_name,
                 policy_display_name=row.policydefinitions.policy_display_name,
@@ -284,6 +329,8 @@ class PolicyCompliance(BaseDb):
         Compiles statistics concerning policy definitions using existing records in the factcompliance
         :return:
         """
+        batch_uuid = uuid.uuid4()
+        created = datetime.datetime.utcnow()
 
         models = self.get_db_model(self.engine)
         FactCompliance = models.classes.factcompliance
@@ -331,7 +378,11 @@ class PolicyCompliance(BaseDb):
                                                  policy_description=description,
                                                  policy_display_name=displayName,
                                                  policy_type=policyType,
-                                                 metadata_category=category)
+                                                 metadata_category=category,
+                                                 created=created,
+                                                 modified=created,
+                                                 batch_uuid=batch_uuid,
+                                                 )
 
                             policies_found.append(policy.policy_definition_name)
                             bulk_insert.append(policy)
@@ -340,6 +391,10 @@ class PolicyCompliance(BaseDb):
             session.commit()
 
     def summarize_subscriptions(self, tenant_id, management_grp):
+
+        batch_uuid = uuid.uuid4()
+        created = datetime.datetime.utcnow()
+
         # create a configured "Session" class
 
         # create a Session
@@ -366,8 +421,13 @@ class PolicyCompliance(BaseDb):
                         compliant=dfrow['compliant'],
                         noncompliant=dfrow['noncompliant'],
                         total_resources_measured=dfrow['total_resources_measured'],
-                        percent_compliant=dfrow['percent_compliant'])
+                        percent_compliant=dfrow['percent_compliant'],
+                        created=created,
+                        modified=created,
+                        batch_uuid=batch_uuid)
+
                     bulk_insert.append(fact)
+
                 session.bulk_save_objects(bulk_insert)
                 session.commit()
 

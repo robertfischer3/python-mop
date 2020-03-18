@@ -8,7 +8,7 @@ from mop.azure.utils.create_configuration import OPERATIONSPATH, change_dir, CON
 
 
 class BaseDb:
-    def __init__(self, driver, database, dialect, password, server, user, configuration_file="CONFVARIABLES"):
+    def __init__(self, driver, database, dialect, password, server, username, configuration_file="CONFVARIABLES"):
 
         with change_dir(OPERATIONSPATH):
             self.config = ConfigParser()
@@ -21,7 +21,7 @@ class BaseDb:
         self.dialect = dialect
         self.server = server
         self.database = database
-        self.user = user
+        self.username = username
         self.password = password
 
         self.get_db_engine()
@@ -44,10 +44,11 @@ class BaseDb:
                :param user:
                :return: database engine
                """
-        connect_str = "DRIVER={driver};SERVER={server};DATABASE={database};UID=SA;PWD={password}".format(
+        connect_str = "DRIVER={driver};SERVER={server};DATABASE={database};UID={username};PWD={password}".format(
             driver=self.driver,
             server=self.server,
             database=self.database,
+            username=self.username,
             password=self.password,
         )
         params = urllib.parse.quote_plus(connect_str)

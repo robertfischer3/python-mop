@@ -40,12 +40,39 @@ class TestAnalysisCompileCompliance(unittest.TestCase):
         summarize = PolicyCompliance()
         summarize.compile_sci()
 
+    def test_register_policy_definition(self):
+        policy_definition_names = ['glbl-pr-sec-vmss-nomanageddisks-pol',
+                                   'glbl-pr-sec-sqlserver-noaadadmin-pol',
+                                   'glbl-pr-sec-vm-diskencrypt-pol',
+                                   'glbl-pr-sec-storage-vnet-pol',
+                                   'glbl-pr-sec-sqlserver-serverlevelthreatdetection-pol',
+                                   'glbl-pr-sec-sqlserver-serverlevelauditsetting-pol',
+                                   'glbl-pr-sec-sqldb-threatdetection-pol',
+                                   'glbl-pr-sec-sqldb-encryption-pol',
+                                   'glbl-pr-sec-sqldb-dblevelauditsetting-pol',
+                                   'glbl-pr-sec-keyvault-novnetrules-pol',
+                                   'glbl-pr-sec-DatalakeStore-serviceEndpoint-pol',
+                                   'glbl-pr-sec-acr-contenttrust-pol']
+
+        subscription_id = 'c537daa8-e7a7-4648-bbc0-f2b6386cca83'
+        policy_compliance = PolicyCompliance()
+        for policy_definition_name in policy_definition_names:
+            policy_compliance.register_policy_definition(subscription_id=subscription_id,
+                                                         policy_definition_name=policy_definition_name)
+
     def test_save_subscription_policies_by_category(self):
         category = self.config["FILTERS"]["policy_defition_category"]
         subscriptionId = self.config["DEFAULT"]["subscription_id"]
 
-        d = "'glbl-pr-sec-sqldb-dblevelauditsetting-pol', 'glbl-pr-sec-sqldb-encryption-pol', 'glbl-pr-sec-sqldb-threatdetection-pol', 'glbl-pr-sec-sqlserver-serverlevelauditsetting-pol', 'glbl-pr-sec-sqlserver-serverlevelthreatdetection-pol','glbl-pr-sec-sqlserver-noaadadmin-pol'"
-        policy_definition_name_list = ['glbl-pr-sec-sqldb-dblevelauditsetting-pol']
+        done = ['glbl-pr-sec-sqlserver-noaadadmin-pol', 'glbl-pr-sec-sqlserver-noaadadmin-pol',
+                'glbl-pr-sec-sqlserver-serverlevelthreatdetection-pol',
+                'glbl-pr-sec-sqlserver-serverlevelauditsetting-pol', 'glbl-pr-sec-sqldb-threatdetection-pol',
+                'glbl-pr-sec-sqldb-encryption-pol', 'glbl-pr-sec-sqldb-dblevelauditsetting-pol',
+                'glbl-pr-sec-keyvault-novnetrules-pol', 'glbl-pr-sec-sqlserver-noaadadmin-pol',
+                'glbl-pr-sec-keyvault-novnetrules-pol', 'glbl-pr-sec-keyvault-novnetrules-pol']
+
+        d = ", , , , , , ,"
+        policy_definition_name_list = []
         summarize = PolicyCompliance()
         # summarize.save_subscription_policies_by_category(category=category)
         summarize.summarize_fact_compliance(category=category, policy_definition_name_list=policy_definition_name_list)

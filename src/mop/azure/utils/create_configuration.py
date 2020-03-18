@@ -41,13 +41,13 @@ def create_baseline_configuration(generate_test=True):
     config["SQLSERVER"] = {"instance01":{
         'server':'tcp:172.17.0.1',
         'database':'TestDB2',
-        'username': 'SA',
+        'username': 'robert',
         'db_driver':'{ODBC Driver 17 for SQL Server}',
         'dialect':'mssql'
     }
     }
     config["FILTERS"] = {
-        "policy_defition_category": "Security",
+        "policy_definition_category": "Security",
         "policy_definition_name_01": ""
     }
     config["LOGGING"] = {"level": "20"}
@@ -79,7 +79,9 @@ def create_baseline_configuration(generate_test=True):
         "policy_definitions_create_or_update":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}?api-version=2019-09-01",
         "policy_assignments_create":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyAssignments/{policyAssignmentName}?api-version=2019-09-01",
         "policy_states_summarize_for_policy_definition":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01",
-        "tags_list":"https://management.azure.com/subscriptions/{subscriptionId}/tagNames?api-version=2019-10-01"
+        "tags_list": "https://management.azure.com/subscriptions/{subscriptionId}/tagNames?api-version=2019-10-01",
+        "policy_set_definitions_create_or_update": "https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policySetDefinitions/{policySetDefinitionName}?api-version=2019-09-01",
+        "policy_states_summarize_for_subscription_level_policy_assignment": "https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyAssignments/{policyAssignmentName}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01"
     }
 
     with atomic_write(CONFVARIABLES, "w") as configfile:

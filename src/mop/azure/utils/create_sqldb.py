@@ -53,7 +53,7 @@ class SQLServerDatabase(BaseDb):
 
         self.baseDb = BaseDb(server=self.server,
                              database=self.database,
-                             user=self.username,
+                             username=self.username,
                              driver=self.db_driver,
                              dialect=self.dialect,
                              password=password)
@@ -74,6 +74,16 @@ class SQLServerDatabase(BaseDb):
         # TODO establish proper data model
 
         meta = MetaData()
+
+        subscription_tags = Table(
+            meta,
+            Column("index", BigInteger, autoincrement=True, primary_key=True),
+            Column("subscription_id", String(36)),
+            Column("tag_name", String),
+            Column("tag_value", String),
+            Column("batch_uuid", String),
+            Column("created", DateTime),
+        )
 
         test_compiled_sci = Table(
             "test_compiled_sci",
