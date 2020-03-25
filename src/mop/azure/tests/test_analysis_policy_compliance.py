@@ -61,18 +61,29 @@ class TestAnalysisCompileCompliance(unittest.TestCase):
                                                          policy_definition_name=policy_definition_name)
 
     def test_save_subscription_policies_by_category(self):
-        category = self.config["FILTERS"]["policy_defition_category"]
+        category = self.config["FILTERS"]["policy_definition_category"]
         subscriptionId = self.config["DEFAULT"]["subscription_id"]
 
-        done = ['glbl-pr-sec-sqlserver-noaadadmin-pol', 'glbl-pr-sec-sqlserver-noaadadmin-pol',
+        policy_definition_name_list = ['glbl-pr-sec-acr-contenttrust-pol',
+                                       'glbl-pr-sec-aks-nopodsecuritypolicies-pol',
+                                       'glbl-pr-sec-storage-vnet-pol',
+                                       'glbl-pr-sec-sqlserver-noaadadmin-pol',
                 'glbl-pr-sec-sqlserver-serverlevelthreatdetection-pol',
-                'glbl-pr-sec-sqlserver-serverlevelauditsetting-pol', 'glbl-pr-sec-sqldb-threatdetection-pol',
-                'glbl-pr-sec-sqldb-encryption-pol', 'glbl-pr-sec-sqldb-dblevelauditsetting-pol',
-                'glbl-pr-sec-keyvault-novnetrules-pol', 'glbl-pr-sec-sqlserver-noaadadmin-pol',
-                'glbl-pr-sec-keyvault-novnetrules-pol', 'glbl-pr-sec-keyvault-novnetrules-pol']
+                                       'glbl-pr-sec-sqlserver-serverlevelauditsetting-pol',
+                                       'glbl-pr-sec-sqldb-threatdetection-pol',
+                                       'glbl-pr-sec-sqldb-encryption-pol',
+                                       'glbl-pr-sec-sqldb-dblevelauditsetting-pol',
+                                       'glbl-pr-sec-sqlserver-noaadadmin-pol',
+                                       'glbl-pr-sec-keyvault-novnetrules-pol',
+                                       'glbl-pr-sec-aks-nopodsecuritypolicies-pol',
+                                       'glbl-pr-sec-vm-diskencrypt-pol',
+                                       'glbl-pr-sec-vmss-nomanageddisks-pol',
+                                       'security-pol-adl-gen1diagnosticlogsanalytics',
+                                       'glbl-pr-sec-vm-windowsantimalware-pol'
+                                       ]
 
-        d = ", , , , , , ,"
-        policy_definition_name_list = []
-        summarize = PolicyCompliance()
-        # summarize.save_subscription_policies_by_category(category=category)
-        summarize.summarize_fact_compliance(category=category, policy_definition_name_list=policy_definition_name_list)
+        for policy_definition_name in policy_definition_name_list:
+            summarize = PolicyCompliance()
+            # summarize.save_subscription_policies_by_category(category=category)
+            summarize.summarize_fact_compliance_for_definition(category=category,
+                                                               policy_definition_name=policy_definition_name)

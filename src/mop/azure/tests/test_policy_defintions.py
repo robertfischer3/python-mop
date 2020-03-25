@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 
 from mop.azure.analysis.baseline.aggregate_subscriptions import AggregateSubscriptions
 from mop.azure.comprehension.resource_management.policy_definitions import PolicyDefinition
+
 from mop.azure.utils.create_configuration import OPERATIONSPATH, change_dir, TESTVARIABLES
 
 
@@ -58,14 +59,37 @@ class TestPolicyDefinitionsCase(unittest.TestCase):
                     with open("policy_definition_records{}.json".format(batch_uuid), "a+") as json_results:
                         json_results.write(policy_assignment_record)
 
+    def test_create_management_group_definition(self):
+        management_grp_id = self.config['DEFAULT']['management_grp_id']
+        management_grp_policy_definition = PolicyDefinition()
+
+        policy_definition_files = management_grp_policy_definition.get_json_policy_definitions()
+
+        for policy_definition_file in policy_definition_files:
+            with open(policy_definition_file['policy_definition_path']) as definition:
+                policy_definition_body = json.load(definition)
+                if 'name' in policy_definition_body:
+                    policyDefinitionName = policy_definition_body['name']
+
+            policy_definition_body = json.dumps(policy_definition_body)
+            response = management_grp_policy_definition.create_management_group_definition(management_grp_id,
+                                                                                           policyDefinitionName=policyDefinitionName,
+                                                                                           policy_definition_body=policy_definition_body)
+            print(response.status_code)
+
+
     def test_create_single_subscription_policy_assignment(self):
         '''
         Create a single assignment across in single subscriptions
         :return:
         '''
         subscriptionId = self.config['DEFAULT']['subscription_id']
+
         policy_definitions = PolicyDefinition()
-        policy_assignments, responses = policy_definitions.create_subscription_policy_assignment(subscriptionId)
+        definitions = policy_definitions.get_json_policy_definitions()
+
+        policy_assignments, responses = policy_definitions.create_subscription_policy_assignment(subscriptionId,
+                                                                                                 definitions)
         for response in responses:
             self.assertEqual(response.status_code, 200)
 
@@ -76,10 +100,12 @@ class TestPolicyDefinitionsCase(unittest.TestCase):
         subscriptions = AggregateSubscriptions()
         result = subscriptions.list_subscriptions()
         policy_definitions = PolicyDefinition()
+        definitions = policy_definitions.get_json_policy_definitions()
+
         for subscription in result:
             print(subscription.subscription_id)
-            response = policy_definitions.create_subscription_policy_assignment(subscription.subscription_id)
-
+            response = policy_definitions.create_subscription_policy_assignment(subscription.subscription_id,
+                                                                                definitions)
 
     def test_get_policy_definition(self):
 
@@ -99,7 +125,7 @@ class TestPolicyDefinitionsCase(unittest.TestCase):
         """
 
         subscriptionId = self.config['DEFAULT']['subscription_id']
-        category = policy_definition_category = self.config['FILTERS']['policy_definition_category']
+        category = self.config['FILTERS']['policy_definition_category']
 
         policy_definitions = PolicyDefinition()
         policy_definition_list = policy_definitions.list_subscription_policy_definition_by_category(
@@ -119,35 +145,17 @@ class TestPolicyDefinitionsCase(unittest.TestCase):
 
         :return:
         """
-
         managementGroupId = self.config['DEFAULT']['management_grp_id']
-        search_category = self.config["FILTERS"]["policy_defition_category"]
+        search_category = self.config["FILTERS"]["policy_definition_category"]
+        policy_definitons = PolicyDefinition()
 
-        response = self.policy_definition_list_by_management_group_category(managementGroupId)
+        response = policy_definitons.list_by_management_group_category(managementGroupId, search_category)
 
         policy_definitions = json.dumps(response.json(), indent=4, ensure_ascii=False)
         with open("test_policy_definitions.json", "w") as json_results:
             json_results.write(policy_definitions)
 
         self.assertIsInstance(response.json(), dict)
-
-    def policy_definition_list_by_management_group_category(self, managementGroupId):
-        policy_definitions = PolicyDefinition()
-        response = policy_definitions.policy_definitions_list_by_management_group(managementGroupId)
-        results = response.json()
-        policies = results['value']
-        for policy in policies:
-            policy_type = policy['properties']['policyType']
-            if policy_type not in ['BuiltIn', 'Static']:
-                policy_name = policy['name']
-                policy_category = ""
-                if 'category' in policy['properties']['metadata']:
-                    policy_category = ['properties']['metadata']['category']
-
-                policy_display_name = policy['properties']['displayName']
-                if policy['properties']['description']:
-                    policy_description = policy['properties']['description']
-        return response
 
 
 if __name__ == '__main__':

@@ -1,6 +1,8 @@
+import json
 import logging
+import uuid
 from configparser import ConfigParser
-
+from tenacity import retry, wait_random, stop_after_attempt
 from dotenv import load_dotenv
 
 from mop.azure.connections import request_authenticated_session, Connections
@@ -25,10 +27,20 @@ class PolicySetDefinition:
         else:
             self.credentials = Connections().get_authenticated_client()
 
+    def list(self, subscriptionId, policySetDefinitionName):
+        api_endpoint = self.config["AZURESDK"]["policy_set_definitions_create_or_update"]
+        api_endpoint = api_endpoint.format(subscriptionId=subscriptionId,
+                                           policySetDefinitionName=policySetDefinitionName)
+
+        with request_authenticated_session() as req:
+            policy_set_definition = req.get(api_endpoint)
+
+        return policy_set_definition
+
+    @retry(wait=wait_random(min=1, max=2), stop=stop_after_attempt(2))
     def create_or_update(self, subscriptionId,
                          policySetDefinitionName,
                          policy_set_properties_body,
-                         policy_definition_groups,
                          policyDefinitionsList,
                          policyDefinitionReferenceId):
 
@@ -46,16 +58,18 @@ class PolicySetDefinition:
 
                 policyDefinition = {
                     "policyDefinitionId": policyDefinition['properties']['policyDefinitionId'],
-                    "policyDefinitionReferenceId": policyDefinitionReferenceId,
+                    "policyDefinitionReferenceId": policyDefinitionReferenceId + str(uuid.uuid4()),
                     "parameters": parameters_dict
                 }
-                policyDefinition['']
 
                 policyDefinitionReference.append(policyDefinition)
 
-        policy_set_properties_body['policyDefinitionGroups'] = policy_definition_groups
-        policy_set_properties_body['policyDefinitionsList'] = policyDefinitionsList
+        policy_set_properties_body['properties']['policyDefinitions'] = policyDefinitionReference
+        headers = {'content-type': 'application/json'}
+
+        policy_set_properties_body = json.dumps(policy_set_properties_body)
+
         with request_authenticated_session() as req:
-            policy_set_definition = req.put(api_endpoint)
+            policy_set_definition = req.put(api_endpoint, data=policy_set_properties_body, headers=headers)
 
         return policy_set_definition

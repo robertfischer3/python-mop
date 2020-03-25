@@ -26,7 +26,18 @@ class TestCasePolicyAssigments(unittest.TestCase):
 
         self.assertIsInstance(response.json(), dict)
 
-    def test_policy_set_definition(self):
+    def test_policy_set_definition_list(self):
+        subscription_id = self.config['DEFAULT']['subscription_id']
+        policy_definition_category = self.config['FILTERS']['policy_definition_category']
+        policySetDefinitionName = "{}SubscriptionPolicies".format(policy_definition_category).replace(' ', '')
+
+        policy_set_definition = PolicySetDefinition()
+        response = policy_set_definition.list(subscriptionId=subscription_id,
+                                              policySetDefinitionName=policySetDefinitionName)
+
+        assert response.status_code >= 200 and response.status_code <= 299
+
+    def test_policy_set_definition_create(self):
         subscription_id = self.config['DEFAULT']['subscription_id']
         policy_definition_category = self.config['FILTERS']['policy_definition_category']
 
@@ -38,12 +49,12 @@ class TestCasePolicyAssigments(unittest.TestCase):
                 "description": "{} Minimum Requirements for an Azure subscription".format(policy_definition_category),
                 "metadata": {
                     "category": policy_definition_category
-                }
+                },
+                "policyDefinitions": []
             },
-            "policyDefinitionGroups": [],
-            "policyDefinitions": []
         }
 
+        # Not used currenytly
         policy_definition_groups = [{
             "name": "AuditPolicy",
             "displayName": "Audit Policies",

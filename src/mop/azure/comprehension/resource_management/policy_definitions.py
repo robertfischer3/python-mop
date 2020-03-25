@@ -70,13 +70,27 @@ class PolicyDefinition:
                     {"policy_defintion_name": policy_defintion_name, "policy_definition_path": policy_definition_path})
         return paths
 
-    def create_subscription_policy_assignment(self, subscriptionId):
-        definitions = self.get_json_policy_definitions()
+    retry(wait=wait_random(min=1, max=3), stop=stop_after_attempt(4))
+
+    def create_management_group_definition(self, managementGroupId, policyDefinitionName, policy_definition_body):
+
+        api_endpoint = self.config["AZURESDK"]['policy_definitions_create_or_update_at_management_group']
+        api_endpoint = api_endpoint.format(managementGroupId=managementGroupId,
+                                           policyDefinitionName=policyDefinitionName)
+
+        headers = {'content-type': 'application/json'}
+
+        with request_authenticated_session() as req:
+            policy_definition = req.put(api_endpoint, data=policy_definition_body, headers=headers)
+
+        return policy_definition
+
+    def create_subscription_policy_assignment(self, subscriptionId, policy_definitions_dict):
 
         policy_assignments = list()
         rest_api_responses = list()
 
-        for p in definitions:
+        for p in policy_definitions_dict:
             if p["policy_defintion_name"]:
                 policy_definition_name = p["policy_defintion_name"]
                 api_endpoint = self.config["AZURESDK"]["policy_definitions_get"]
@@ -289,6 +303,25 @@ class PolicyDefinition:
         else:
             return None
 
+    def list_by_management_group_category(self, managementGroupId, search_category=''):
+
+        policy_definitions = PolicyDefinition()
+        in_category_policies = []
+
+        response = policy_definitions.policy_definitions_list_by_management_group(managementGroupId)
+
+        if response.status_code >= 200 and response.status_code <= 299:
+            results = response.json()
+            if search_category is None:
+                return results['value']
+
+            policies = results['value']
+            for policy in policies:
+                if 'category' in policy['properties']['metadata'] and search_category in \
+                    policy['properties']['metadata']['category']:
+                    in_category_policies.append(policy)
+
+        return in_category_policies
 
 def get_policydefinitions_management_grp(creds, base_subscription, management_grp):
     """

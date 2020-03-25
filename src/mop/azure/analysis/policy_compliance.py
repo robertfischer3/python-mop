@@ -117,6 +117,13 @@ class PolicyCompliance(BaseDb):
             session.commit()
 
     def register_policy_definition(self, subscription_id, policy_definition_name):
+        '''
+        The method registers a policy in the DimPolicies database.  Method doesn't provide much useful functionality and
+        will likely be removed.
+        :param subscription_id:
+        :param policy_definition_name:
+        :return:
+        '''
         policy_definitions = PolicyDefinition()
 
         models = self.get_db_model(self.engine)
@@ -263,7 +270,7 @@ class PolicyCompliance(BaseDb):
             session.bulk_save_objects(bulk_insert)
             session.commit()
 
-    def summarize_fact_compliance(self, category, policy_definition_name_list, subscription_id=None):
+    def summarize_fact_compliance_for_definition(self, category, policy_definition_name, subscription_id=None):
 
         jmespath_expression = jmespath.compile("value[*].policyAssignments[*].policyDefinitions[*]")
         policy_states = PolicyStates()
@@ -288,41 +295,39 @@ class PolicyCompliance(BaseDb):
             tenant_id = subscription.tenant_id
             print(subscription.subscription_id)
 
-            for policy_definition_name in policy_definition_name_list:
+            policy_states_of_definition = policy_states.policy_states_summarize_for_policy_definition(
+                subscriptionId=subscription.subscription_id,
+                policyDefinitionName=policy_definition_name).json()
 
-                policy_states_of_definition = policy_states.policy_states_summarize_for_policy_definition(
-                    subscriptionId=subscription.subscription_id,
-                    policyDefinitionName=policy_definition_name).json()
+            jmes_result = jmespath_expression.search(policy_states_of_definition)
 
-                jmes_result = jmespath_expression.search(policy_states_of_definition)
+            if jmespath_expression is None or jmes_result is None or jmes_result[0] is None or len(jmes_result[0]) == 0:
+                continue
+            else:
+                # flatten results
+                policyresults = jmes_result[0][0]
+                bulk_insert = list()
+                for policyresult in policyresults:
+                    policy_definition_name = str(policyresult['policyDefinitionId']).split('/')[-1]
+                    resourceDetails = jmespath.search('results.resourceDetails[*]', policyresult)
 
-                if jmespath_expression is None or jmes_result is None or jmes_result[0] is None or len(jmes_result[0]) == 0:
-                    continue
-                else:
-                    # flatten results
-                    policyresults = jmes_result[0][0]
-                    bulk_insert = list()
-                    for policyresult in policyresults:
-                        policy_definition_name = str(policyresult['policyDefinitionId']).split('/')[-1]
-                        resourceDetails = jmespath.search('results.resourceDetails[*]', policyresult)
+                    compliance_ratio = self.determine_compliance_ratio(resourceDetails)
 
-                        compliance_ratio = self.determine_compliance_ratio(resourceDetails)
+                    fact = FactCompliance(
+                        tenant_id=tenant_id,
+                        subscription_id=subscription.subscription_id,
+                        policy_definition_name=policy_definition_name,
+                        compliant=compliance_ratio['compliant'],
+                        noncompliant=compliance_ratio['noncompliant'],
+                        total_resources_measured=compliance_ratio['total_resources_measured'],
+                        percent_compliant=compliance_ratio['percent_compliant'],
+                        batch_uuid=batch_uuid,
+                        created=created,
+                        modified=created)
+                    bulk_insert.append(fact)
 
-                        fact = FactCompliance(
-                            tenant_id=tenant_id,
-                            subscription_id=subscription.subscription_id,
-                            policy_definition_name=policy_definition_name,
-                            compliant=compliance_ratio['compliant'],
-                            noncompliant=compliance_ratio['noncompliant'],
-                            total_resources_measured=compliance_ratio['total_resources_measured'],
-                            percent_compliant=compliance_ratio['percent_compliant'],
-                            batch_uuid=batch_uuid,
-                            created=created,
-                            modified=created)
-                        bulk_insert.append(fact)
-
-                    session.bulk_save_objects(bulk_insert)
-                    session.commit()
+                session.bulk_save_objects(bulk_insert)
+                session.commit()
 
     def summarize_query_results_for_policy_definitions(self):
         """
