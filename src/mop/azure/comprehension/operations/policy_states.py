@@ -60,7 +60,7 @@ class PolicyStates:
         :param subscriptionId:
         :return:
         """
-        api_endpoint = self.config["AZURESDK"]["policystatessummarizeforresourcegroup"]
+        api_endpoint = self.config["AZURESDK"]["policy_states_summarize_for_resource_group"]
         api_endpoint = api_endpoint.format(subscriptionId=subscriptionId)
 
         with request_authenticated_session() as req:
@@ -91,14 +91,6 @@ class PolicyStates:
         finally:
             return query_results_for_policy_definitions_function
 
-    def list_operations(self, subscriptionId):
-        api_endpoint = self.config["AZURESDK"]["PolicyDefinitionsListBuiltin"]
-        api_endpoint = api_endpoint.format(subscriptionId=subscriptionId)
-        with request_authenticated_session as req:
-            definitions_function = req.post(api_endpoint).json
-
-        return definitions_function
-
     def policy_states_summarize_for_resource(self, resourceId):
         """
 
@@ -127,7 +119,7 @@ class PolicyStates:
 
     def policy_states_list_query_results_for_management_group(self, management_grp, policyStatesResource='latest'):
 
-        api_endpoint = self.config["AZURESDK"]["policystateslistqueryresultsformanagementgroup"]
+        api_endpoint = self.config["AZURESDK"]["policy_states_list_query_results_for_management_group"]
         api_endpoint = api_endpoint.format(managementGroupName=management_grp,
                                            policyStatesResource=policyStatesResource)
         with request_authenticated_session() as req:
@@ -143,7 +135,7 @@ class PolicyStates:
         :param subscription:
         :return:
         """
-        api_endpoint = self.config["AZURESDK"]["policystatessummarizeforsubscription"]
+        api_endpoint = self.config["AZURESDK"]["policy_states_summarize_for_subscription"]
         api_endpoint = api_endpoint.format(subscriptionId=subscription)
 
         with request_authenticated_session() as req:
@@ -170,7 +162,8 @@ class PolicyStates:
         return policy_states_summary_subscription
 
     def policy_states_filter_and_multiple_groups(self, subscriptionId):
-        api_endpoint = os.environ["PolicyStatesFilterandmultiplegroups"]
+
+        api_endpoint = self.config["AZURESDK"]["policy_states_filter_and_multiple_groups"]
         api_endpoint = api_endpoint.format(subscriptionId=subscriptionId)
 
         with request_authenticated_session() as req:
@@ -184,7 +177,7 @@ class PolicyStates:
         :param subscriptionId:
         :return: function
         """
-        api_endpoint = os.environ["PolicyStatesFilterandmultiplegroups"]
+        api_endpoint = self.config["AZURESDK"]["policy_states_filter_and_multiple_groups"]
         api_endpoint = api_endpoint.format(subscriptionId=subscriptionId)
 
         with request_authenticated_session() as req:
@@ -192,7 +185,7 @@ class PolicyStates:
 
         return r_policy_states_filter_and_multiple_groups
 
-    def summarize_for_subscript(self, creds, subscription_id):
+    def summarize_for_subscription(self, creds, subscription_id):
         """
 
         :param creds:

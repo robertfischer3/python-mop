@@ -37,6 +37,20 @@ class TestResourcesSubscriptions(unittest.TestCase):
         results = execute()
         print(type(results))
 
+    def test_list(self):
+
+        response = Subscriptions().list()
+        if response.status_code in range(200, 299):
+            subscriptions = response.json()
+            if 'value' in subscriptions:
+                print('Total Number of subscriptions {}'.format(len(subscriptions['value'])))
+                self.assertGreater(len(subscriptions['value']), 0)
+
+                for subscription in subscriptions['value']:
+                    print(subscription['displayName'], subscription['subscriptionId'])
+        else:
+            self.assertEqual(True, False)
+
     def test_jmespath_search(self):
 
         with open("response.json", "r") as myfile:
@@ -54,7 +68,7 @@ class TestResourcesSubscriptions(unittest.TestCase):
 
         subscription_id = self.config['DEFAULT']['subscription_id']
 
-        subscription_tags =  Subscriptions().get_tags_values(subscription_id, 'functional owner', 'financial owner', 'billing contact')
+        subscription_tags =  Subscriptions().get_tags_dictionary(subscription_id, 'functional owner', 'financial owner', 'billing contact')
         self.assertEqual(len(subscription_tags) == 3, True)
 
     def test_subscription_list_displayname_id(self):

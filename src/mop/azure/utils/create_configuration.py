@@ -21,7 +21,6 @@ def change_dir(destination):
     finally:
         os.chdir(cwd)
 
-
 def create_baseline_configuration(generate_test=True):
     """
         The method creates the api configuration file for Azure API calls.  As Microsoft changes
@@ -34,6 +33,7 @@ def create_baseline_configuration(generate_test=True):
         "subscription_id": os.environ["SUB"],
         "management_grp_id": os.environ["MANGRP"],
         "tenant_id": os.environ["TENANT"],
+        "organization": os.environ["ORGANIZATION"],
     }
     """
     The configuration file supports multiple database instances
@@ -41,47 +41,64 @@ def create_baseline_configuration(generate_test=True):
     config["SQLSERVER"] = {"instance01":{
         'server':'tcp:172.17.0.1',
         'database':'TestDB2',
-        'username': 'SA',
+        'username': 'robert',
         'db_driver':'{ODBC Driver 17 for SQL Server}',
         'dialect':'mssql'
     }
     }
     config["FILTERS"] = {
-        "policy_defition_category": "Security",
+        "policy_definition_category": "Security",
         "policy_definition_name_01": ""
     }
     config["LOGGING"] = {"level": "20"}
     config["AZURESDK"] = {
-        "management_root":"https://management.azure.com",
-        "apiversion":"2019-09-01",
-        "PolicyStatesSummarizeForSubscription": "https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01",
-        "PolicyStatesSummarizeForSubscriptionFiltered": "https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01&$filter={filter}",
-        "Subscriptions": "https://management.azure.com/subscriptions?api-version=2019-06-01",
-        "PolicyStatesFilterandmultiplegroups": "https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/queryResults?api-version=2018-04-04&$top=10&$orderby=NumNonCompliantResources desc&$filter=IsCompliant eq false&$apply=groupby((PolicyAssignmentId, PolicySetDefinitionId, PolicyDefinitionId, PolicyDefinitionReferenceId, ResourceId))/groupby((PolicyAssignmentId, PolicySetDefinitionId, PolicyDefinitionId, PolicyDefinitionReferenceId), aggregate($count as NumNonCompliantResources))",
-        "PolicyStatesFilterandmultiplegroupsTrue": "https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/queryResults?api-version=2018-04-04&$top=10&$orderby=NumNonCompliantResources desc&$filter=IsCompliant eq true&$apply=groupby((PolicyAssignmentId, PolicySetDefinitionId, PolicyDefinitionId, PolicyDefinitionReferenceId, ResourceId))/groupby((PolicyAssignmentId, PolicySetDefinitionId, PolicyDefinitionId, PolicyDefinitionReferenceId), aggregate($count as NumNonCompliantResources))",
-        "ListQueryResultsForManagementGroup": "https://management.azure.com/providers/Microsoft.Management/managementGroups/{managementGroupName}/providers/Microsoft.PolicyInsights/policyStates/{policyStatesResource}/queryResults?api-version=2018-04-04",
-        "PolicyInsightsOperationsList": "PolicyInsightsOperationsList=https://management.azure.com/providers/Microsoft.PolicyInsights/operations?api-version=2018-04-04",
-        "VirtualNetworksList": "https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/virtualNetworks?api-version=2019-09-01",
-        "VirtualNetworksListAll": "https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Network/virtualNetworks?api-version=2019-09-01",
-        "VirtualNetworksListUsage": "https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/virtualNetworks/{virtualNetworkName}/usages?api-version=2019-09-01",
-        "PolicyStatesSummarizeForSubscriptionQuery":"https://management.azure.com/subscriptions/82746ea2-9f97-4313-b21a-e9bde3a0a241/providers/Microsoft.PolicyInsights/policyStates/latest/queryResults?api-version=2019-10-01&$from=2019-12-17 20:12:48Z&$to=2019-12-18 20:12:48Z and PolicyAssignmentId eq '/providers/microsoft.management/managementgroups/12a3af23-a769-4654-847f-958f3d479f4a/providers/microsoft.authorization/policyassignments/95b344047fdf442fa4172383' and PolicyDefinitionId eq '/providers/microsoft.authorization/policydefinitions/c8343d2f-fdc9-4a97-b76f-fc71d1163bfc' and PolicyDefinitionReferenceId eq 'sqlserveradvanceddatasecurityemailadminsmonitoring",
-        "PolicyStatesSummarizeForResourceGroup":"https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01",
-        "resourcegroupslist":"https://management.azure.com/subscriptions/{subscriptionId}/resourcegroups?api-version=2019-08-01",
-        "resourcelist":"https://management.azure.com/subscriptions/{subscriptionId}/resources?api-version=2019-08-01",
-        "policy_defintions_by_subscription":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions?api-version=2019-09-01",
-        "policystateslistqueryresultsformanagementgroup": 'https://management.azure.com/providers/Microsoft.Management/managementGroups/{managementGroupName}/providers/Microsoft.PolicyInsights/policyStates/{policyStatesResource}/queryResults?api-version=2019-10-01',
-        "policy_states_list_query_results_for_policy_definitions":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}/providers/Microsoft.PolicyInsights/policyStates/{policyStatesResource}/queryResults?api-version=2019-10-01",
-        "policy_definitions_list_by_management_group":"https://management.azure.com/providers/Microsoft.Management/managementgroups/{managementGroupId}/providers/Microsoft.Authorization/policyDefinitions?api-version=2019-09-01",
-        "policy_definitions_get":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}?api-version=2019-09-01",
-        "get_policy_definition_by_name":"https://management.azure.com/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}?api-version=2019-09-01",
-        "policy_assignments_list":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyAssignments?api-version=2019-09-01",
-        "policy_definitions_list":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions?api-version=2019-09-01",
-        "policy_definitions_create_or_update":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}?api-version=2019-09-01",
-        "policy_assignments_create":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyAssignments/{policyAssignmentName}?api-version=2019-09-01",
-        "policy_states_summarize_for_policy_definition":"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01",
-        "tags_list":"https://management.azure.com/subscriptions/{subscriptionId}/tagNames?api-version=2019-10-01"
+        'apiversion': '2019-09-01',
+        'get_policy_definition_by_name': 'https://management.azure.com/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}?api-version=2019-09-01',
+        'listqueryresultsformanagementgroup': 'https://management.azure.com/providers/Microsoft.Management/managementGroups/{managementGroupName}/providers/Microsoft.PolicyInsights/policyStates/{policyStatesResource}/queryResults?api-version=2018-04-04',
+        'management_root': 'https://management.azure.com',
+        'policy_assignments_create': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyAssignments/{policyAssignmentName}?api-version=2019-09-01',
+        'policy_assignments_list': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyAssignments?api-version=2019-09-01',
+        'policy_definitions_create_or_update': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}?api-version=2019-09-01',
+        'policy_definitions_create_or_update_at_management_group': 'https://management.azure.com/providers/Microsoft.Management/managementgroups/{managementGroupId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}?api-version=2019-09-01',
+        'policy_definitions_get': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}?api-version=2019-09-01',
+        'policy_definitions_get_at_management_group': 'https://management.azure.com/providers/Microsoft.Management/managementgroups/{managementGroupId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}?api-version=2019-09-01',
+        'policy_definitions_list': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions?api-version=2019-09-01',
+        'policy_definitions_list_by_management_group': 'https://management.azure.com/providers/Microsoft.Management/managementgroups/{managementGroupId}/providers/Microsoft.Authorization/policyDefinitions?api-version=2019-09-01',
+        'policy_defintions_by_subscription': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions?api-version=2019-09-01',
+        'policy_insights_operations_list': 'https://management.azure.com/providers/Microsoft.PolicyInsights/operations?api-version=2018-04-04',
+        'policy_set_definitions_create_or_update': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policySetDefinitions/{policySetDefinitionName}?api-version=2019-09-01',
+        'policy_set_definitions_list': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policySetDefinitions?api-version=2019-09-01',
+        'policy_states_filter_and_multiple_groups': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/queryResults?api-version=2018-04-04&$top=10&$orderby=NumNonCompliantResources desc&$filter=IsCompliant eq false&$apply=groupby((PolicyAssignmentId, PolicySetDefinitionId, PolicyDefinitionId, PolicyDefinitionReferenceId, ResourceId))/groupby((PolicyAssignmentId, PolicySetDefinitionId, PolicyDefinitionId, PolicyDefinitionReferenceId), aggregate($count as NumNonCompliantResources))',
+        'policy_states_filter_and_multiple_groups_true': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/queryResults?api-version=2018-04-04&$top=10&$orderby=NumNonCompliantResources desc&$filter=IsCompliant eq true&$apply=groupby((PolicyAssignmentId, PolicySetDefinitionId, PolicyDefinitionId, PolicyDefinitionReferenceId, ResourceId))/groupby((PolicyAssignmentId, PolicySetDefinitionId, PolicyDefinitionId, PolicyDefinitionReferenceId), aggregate($count as NumNonCompliantResources))',
+        'policy_states_list_query_results_for_policy_definitions': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}/providers/Microsoft.PolicyInsights/policyStates/{policyStatesResource}/queryResults?api-version=2019-10-01',
+        'policy_states_summarize_for_policy_definition': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01',
+        'policy_states_summarize_for_resource_group': 'https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01',
+        'policy_states_summarize_for_subscription': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01',
+        'policy_states_summarize_for_subscription_filtered': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01&$filter={filter}',
+        'policy_states_summarize_for_subscription_level_policy_assignment': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyAssignments/{policyAssignmentName}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize?api-version=2019-10-01',
+        'policystateslistqueryresultsformanagementgroup': 'https://management.azure.com/providers/Microsoft.Management/managementGroups/{managementGroupName}/providers/Microsoft.PolicyInsights/policyStates/{policyStatesResource}/queryResults?api-version=2019-10-01',
+        'resourcegroupslist': 'https://management.azure.com/subscriptions/{subscriptionId}/resourcegroups?api-version=2019-08-01',
+        'resourcelist': 'https://management.azure.com/subscriptions/{subscriptionId}/resources?api-version=2019-08-01',
+        'subscriptions': 'https://management.azure.com/subscriptions?api-version=2019-06-01',
+        'tags_list': 'https://management.azure.com/subscriptions/{subscriptionId}/tagNames?api-version=2019-10-01',
+        'virtual_networks_list': 'https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/virtualNetworks?api-version=2019-09-01',
+        'virtual_networks_list_all': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Network/virtualNetworks?api-version=2019-09-01',
+        'virtual_networks_list_usage': 'https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/virtualNetworks/{virtualNetworkName}/usages?api-version=2019-09-01',
+        'azure_devops_repositories_list': 'https://dev.azure.com/{organization}/{project}/_apis/git/repositories?api-version=5.1'
     }
 
+    config["GIT"] = {
+        'azure_project_01': 'testproject',
+        'azure_repository_id_01': 'b3e721c7-0a2a-4712-b37a-2df3ce32f4cf',
+        'azure_repository_name_01': 'testrepo',
+        'azure_scope_path_01': '/cloud/azure/policy/security',
+        'azure_devops_organization_url': '',
+        'azure_devops_repositories_list': 'https://dev.azure.com/{organization}/{project}/_apis/git/repositories?api-version=5.1',
+        'azure_devops_repository_get': 'https://dev.azure.com/{organization}/{project}/_apis/git/repositories/{repositoryId}?api-version=5.1',
+        'azure_devops_refs_list': 'https://dev.azure.com/{organization}/{project}/_apis/git/repositories/{repositoryId}/refs?filter=heads/&filterContains={filterValue}&api-version=5.1',
+        'azure_devops_items_list': 'https://dev.azure.com/{organization}/{project}/_apis/git/repositories/{repositoryId}/items?scopePath={scopePath}&recursionLevel={recursionLevel}&includeLinks={includeLinks}&versionDescriptor.version={versionDescriptor_version}&api-version=5.1'
+
+    }
     with atomic_write(CONFVARIABLES, "w") as configfile:
         config.write(configfile)
 

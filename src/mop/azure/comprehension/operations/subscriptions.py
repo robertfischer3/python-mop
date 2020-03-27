@@ -6,6 +6,8 @@ import pandas as pd
 from azure.mgmt.managementgroups import ManagementGroupsAPI
 from azure.mgmt.resource.policy import PolicyClient
 from azure.mgmt.resource.policy.models import PolicyAssignment
+from tenacity import retry, wait_random, stop_after_attempt
+
 # TODO change refernce to latest
 from azure.mgmt.resource.policy.v2018_03_01.models.error_response_py3 import (
     ErrorResponseException,
@@ -32,6 +34,26 @@ class Subscriptions():
         logging_level = int(self.config['LOGGING']['level'])
         logging.basicConfig(level=logging_level)
 
+    retry(wait=wait_random(min=1, max=3), stop=stop_after_attempt(4))
+
+    def list(self):
+        """
+        api_endpoint and api_api_version read from the app.config.ini or test.app.config.ini files.
+        In this way, the code is always loosely coupled from the service.
+        :return:
+        """
+        api_endpoint = self.config['AZURESDK']['subscriptions']
+        api_version = self.config['AZURESDK']['apiversion']
+        api_endpoint = api_endpoint.format(apiversion=api_version)
+
+        # with statement automatically closes the connection
+        with request_authenticated_session() as req:
+            # Returns response object. The response object contains the HTTP status code, and the response of the service
+            subscriptions = req.get(api_endpoint)
+
+        return subscriptions
+
+
     def list_subscriptions(self):
         """
 
@@ -41,7 +63,7 @@ class Subscriptions():
 
         return subscriptions
 
-    def get_tags_values(self, subscriptionId, *tag_name):
+    def get_tags_dictionary(self, subscriptionId):
         """
         Accepts any range of tags
         :param subscriptionId:
@@ -49,32 +71,39 @@ class Subscriptions():
         :return:
         """
 
-        management_root = self.config['AZURESDK']['management_root']
-        api_version = self.config['AZURESDK']['apiversion']
-        api_endpoint = "{management_root}/subscriptions/{subscriptionId}/tagNames?api-version={api_version}".format(
-            management_root=management_root,
-            subscriptionId=subscriptionId,
-            api_version=api_version)
-
-        with request_authenticated_session() as req:
-            tags = req.get(api_endpoint)
+        tags = self.get_tags(subscriptionId)
 
         if tags.status_code == 200:
             json_doc = tags.json()
 
             tag_dictionary = {}
 
-            for tag in tag_name:
-                query = "value[?tagName == '{}'].values[0].tagValue".format(tag)
-                tag_value = jmespath.search(query, json_doc)
-                log.debug("Tag, you are it")
-                if tag_value == []:
-                    tag_dictionary[tag] = ''
-                else:
-                    tag_value = tag_value[0]
-                tag_dictionary[tag] = tag_value
+            if json_doc != {'value':[]}:
+                query_tag_names = "value[*].tagName"
+                tag_names = jmespath.search(query_tag_names, json_doc)
+
+                for tag_name in tag_names:
+                    query_tag_values = "value[?tagName == '{}'].values[*].tagValue".format(tag_name)
+                    tag_values = jmespath.search(query_tag_values, json_doc)
+
+                    tag_dictionary[tag_name] = tag_values[0]
+
+                return tag_dictionary
+            else:
+                tag_dictionary['no_tags_present'] = [subscriptionId]
 
             return tag_dictionary
+
+    def get_tags(self, subscriptionId):
+        management_root = self.config['AZURESDK']['management_root']
+        api_version = self.config['AZURESDK']['apiversion']
+        api_endpoint = "{management_root}/subscriptions/{subscriptionId}/tagNames?api-version={api_version}".format(
+            management_root=management_root,
+            subscriptionId=subscriptionId,
+            api_version=api_version)
+        with request_authenticated_session() as req:
+            tags = req.get(api_endpoint)
+        return tags
 
     def get_subscription(self, subscription_id):
 
