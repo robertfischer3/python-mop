@@ -37,6 +37,20 @@ class TestResourcesSubscriptions(unittest.TestCase):
         results = execute()
         print(type(results))
 
+    def test_list(self):
+
+        response = Subscriptions().list()
+        if response.status_code in range(200, 299):
+            subscriptions = response.json()
+            if 'value' in subscriptions:
+                print('Total Number of subscriptions {}'.format(len(subscriptions['value'])))
+                self.assertGreater(len(subscriptions['value']), 0)
+
+                for subscription in subscriptions['value']:
+                    print(subscription['displayName'], subscription['subscriptionId'])
+        else:
+            self.assertEqual(True, False)
+
     def test_jmespath_search(self):
 
         with open("response.json", "r") as myfile:

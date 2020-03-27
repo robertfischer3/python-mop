@@ -20,3 +20,7 @@ class AzureDevOpsItems(AzureDevOpsBase):
             items = req.get(api_endpoint, auth=('', self.personal_access_token))
 
         return items
+
+    def memory_download_file(self, URL):
+        with request_authenticated_session() as req:
+            file = req.get(URL, auth=('', self.personal_access_token))

@@ -6,6 +6,8 @@ import pandas as pd
 from azure.mgmt.managementgroups import ManagementGroupsAPI
 from azure.mgmt.resource.policy import PolicyClient
 from azure.mgmt.resource.policy.models import PolicyAssignment
+from tenacity import retry, wait_random, stop_after_attempt
+
 # TODO change refernce to latest
 from azure.mgmt.resource.policy.v2018_03_01.models.error_response_py3 import (
     ErrorResponseException,
@@ -31,6 +33,26 @@ class Subscriptions():
 
         logging_level = int(self.config['LOGGING']['level'])
         logging.basicConfig(level=logging_level)
+
+    retry(wait=wait_random(min=1, max=3), stop=stop_after_attempt(4))
+
+    def list(self):
+        """
+        api_endpoint and api_api_version read from the app.config.ini or test.app.config.ini files.
+        In this way, the code is always loosely coupled from the service.
+        :return:
+        """
+        api_endpoint = self.config['AZURESDK']['subscriptions']
+        api_version = self.config['AZURESDK']['apiversion']
+        api_endpoint = api_endpoint.format(apiversion=api_version)
+
+        # with statement automatically closes the connection
+        with request_authenticated_session() as req:
+            # Returns response object. The response object contains the HTTP status code, and the response of the service
+            subscriptions = req.get(api_endpoint)
+
+        return subscriptions
+
 
     def list_subscriptions(self):
         """

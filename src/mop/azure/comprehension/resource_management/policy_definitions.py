@@ -71,7 +71,6 @@ class PolicyDefinition:
         return paths
 
     retry(wait=wait_random(min=1, max=3), stop=stop_after_attempt(4))
-
     def create_management_group_definition(self, managementGroupId, policyDefinitionName, policy_definition_body):
 
         api_endpoint = self.config["AZURESDK"]['policy_definitions_create_or_update_at_management_group']
