@@ -1,16 +1,12 @@
-import os
 from configparser import ConfigParser
 from dotenv import load_dotenv
 
-from mop.azure.connections import request_authenticated_session
 from mop.azure.utils.create_configuration import (
     CONFVARIABLES,
     change_dir,
     OPERATIONSPATH,
 )
-from azure.mgmt.policyinsights.models import QueryOptions
-from mop.azure.connections import request_authenticated_session
-from azure.mgmt.policyinsights.models import QueryFailureException
+from mop.framework.azure_connections import request_authenticated_azure_session
 
 
 class VNet:
@@ -22,7 +18,7 @@ class VNet:
 
     def vnets_list(self, subscription):
         api_endpoint = self.config["AZURESDK"]["VirtualNetworksList"]
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             list_vnets_function = req.post(api_endpoint).json
 
         return list_vnets_function
@@ -31,7 +27,7 @@ class VNet:
         api_endpoint = self.config["AZURESDK"]["VirtualNetworksListAll"]
         api_endpoint = api_endpoint.format(resourceId=resourceId)
 
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             resource_policy_function = req.post(api_endpoint).json
         return resource_policy_function
 
@@ -40,7 +36,7 @@ class VNet:
         api_endpoint = api_endpoint.format(
             subscriptionId=subscription, policyDefinitionName=policyDefinitionName
         )
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             vnet_list_usage_fuction = req.post(api_endpoint).json
 
         return vnet_list_usage_fuction

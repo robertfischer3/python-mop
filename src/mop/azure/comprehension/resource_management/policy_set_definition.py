@@ -5,7 +5,7 @@ from configparser import ConfigParser
 from tenacity import retry, wait_random, stop_after_attempt
 from dotenv import load_dotenv
 
-from mop.azure.connections import request_authenticated_session, Connections
+from mop.framework.azure_connections import request_authenticated_azure_session, AzureConnections
 from mop.azure.utils.create_configuration import (
     change_dir,
     CONFVARIABLES,
@@ -25,14 +25,14 @@ class PolicySetDefinition:
         if credentials:
             self.credentials = credentials
         else:
-            self.credentials = Connections().get_authenticated_client()
+            self.credentials = AzureConnections().get_authenticated_client()
 
     def list(self, subscriptionId, policySetDefinitionName):
         api_endpoint = self.config["AZURESDK"]["policy_set_definitions_create_or_update"]
         api_endpoint = api_endpoint.format(subscriptionId=subscriptionId,
                                            policySetDefinitionName=policySetDefinitionName)
 
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             policy_set_definition = req.get(api_endpoint)
 
         return policy_set_definition
@@ -69,7 +69,7 @@ class PolicySetDefinition:
 
         policy_set_properties_body = json.dumps(policy_set_properties_body)
 
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             policy_set_definition = req.put(api_endpoint, data=policy_set_properties_body, headers=headers)
 
         return policy_set_definition

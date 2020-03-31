@@ -1,7 +1,7 @@
 from configparser import ConfigParser
 from dotenv import load_dotenv
 
-from mop.azure.connections import Connections, request_authenticated_session
+from mop.framework.azure_connections import AzureConnections, request_authenticated_azure_session
 from mop.azure.utils.create_configuration import (
     change_dir,
     CONFVARIABLES,
@@ -16,7 +16,7 @@ class PolicyAssignments():
             self.config = ConfigParser()
             self.config.read(CONFVARIABLES)
 
-        self.credentials = Connections().get_authenticated_client()
+        self.credentials = AzureConnections().get_authenticated_client()
 
     def policy_assignments_list(self, subscriptionId):
         """
@@ -27,7 +27,7 @@ class PolicyAssignments():
         api_endpoint = self.config["AZURESDK"]["policy_assignments_list"]
         api_endpoint = api_endpoint.format(subscriptionId=subscriptionId)
 
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             policy_assignments_request = req.get(api_endpoint)
 
         return policy_assignments_request

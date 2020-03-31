@@ -14,7 +14,7 @@ from adal import AuthenticationContext
 
 
 @contextmanager
-def request_authenticated_session():
+def request_authenticated_azure_session():
     """
     Context manager for Azure API calls
     :return: requests.session
@@ -41,8 +41,7 @@ def request_authenticated_session():
             session.close()
 
 
-
-class Connections:
+class AzureConnections:
     """
     Azure connection provides various means to aquire access to an Azure Tenant.  So named since AWS, and Google Cloud
     Platform is planned

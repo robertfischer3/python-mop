@@ -1,4 +1,4 @@
-from mop.azure.connections import request_authenticated_session
+from mop.framework.azure_connections import request_authenticated_azure_session
 from mop.git.azure_devops.devops_base import AzureDevOpsBase
 
 
@@ -16,11 +16,11 @@ class AzureDevOpsItems(AzureDevOpsBase):
                                            includeLinks=includeLinks,
                                            versionDescriptor_version=versionDescriptor_version)
 
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             items = req.get(api_endpoint, auth=('', self.personal_access_token))
 
         return items
 
     def memory_download_file(self, URL):
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             file = req.get(URL, auth=('', self.personal_access_token))

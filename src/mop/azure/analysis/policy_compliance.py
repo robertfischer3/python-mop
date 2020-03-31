@@ -12,7 +12,7 @@ from sqlalchemy.orm import sessionmaker
 
 from mop.azure.comprehension.operations.policy_states import PolicyStates
 from mop.azure.comprehension.resource_management.policy_definitions import PolicyDefinition
-from mop.azure.connections import request_authenticated_session
+from mop.framework.azure_connections import request_authenticated_azure_session
 from mop.azure.utils.create_configuration import CONFVARIABLES, change_dir, OPERATIONSPATH
 from mop.db.basedb import BaseDb
 
@@ -356,7 +356,7 @@ class PolicyCompliance(BaseDb):
             for row in results:
                 print(row.subscription_id, row.policy_definition_name)
                 if row.policy_definition_name not in policies_found:
-                    with request_authenticated_session() as req:
+                    with request_authenticated_azure_session() as req:
                         policy = PolicyDefinition().get_policy_definitions(row.subscription_id,
                                                                            row.policy_definition_name, req)
                         if policy:

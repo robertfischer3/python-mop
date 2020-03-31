@@ -15,7 +15,7 @@ from azure.mgmt.resource.policy.v2018_03_01.models.error_response_py3 import (
 from azure.mgmt.subscription import SubscriptionClient
 from dotenv import load_dotenv
 
-from mop.azure.connections import request_authenticated_session, Connections
+from mop.framework.azure_connections import request_authenticated_azure_session, AzureConnections
 from mop.azure.utils.create_configuration import change_dir, OPERATIONSPATH, CONFVARIABLES
 
 log = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ log = logging.getLogger(__name__)
 class Subscriptions():
     def __init__(self):
         load_dotenv()
-        self.credentials = Connections().get_authenticated_client()
+        self.credentials = AzureConnections().get_authenticated_client()
         self.subscription_client = SubscriptionClient(self.credentials, base_url=None)
 
         with change_dir(OPERATIONSPATH):
@@ -47,7 +47,7 @@ class Subscriptions():
         api_endpoint = api_endpoint.format(apiversion=api_version)
 
         # with statement automatically closes the connection
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             # Returns response object. The response object contains the HTTP status code, and the response of the service
             subscriptions = req.get(api_endpoint)
 
@@ -101,7 +101,7 @@ class Subscriptions():
             management_root=management_root,
             subscriptionId=subscriptionId,
             api_version=api_version)
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             tags = req.get(api_endpoint)
         return tags
 
