@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 from mop.azure.analysis.policy_analysis import EvaluatePolicies
 from mop.azure.comprehension.operations.policy_states import PolicyStates
-from mop.azure.connections import Connections
+from mop.framework.azure_connections import AzureConnections
 from mop.azure.utils.create_configuration import (
     TESTVARIABLES,
     change_dir,
@@ -157,7 +157,7 @@ class TestOperationsPolicyStates(unittest.TestCase):
         subscription = os.environ["SUB"]
         management_grp = os.environ["MANGRP"]
 
-        credentials = Connections().get_authenticated_client()
+        credentials = AzureConnections().get_authenticated_client()
         eval_policies = EvaluatePolicies(credentials)
         df = eval_policies.process_management_grp_subscriptions(management_grp)
 
@@ -172,7 +172,7 @@ class TestOperationsPolicyStates(unittest.TestCase):
         subscription = os.environ["SUB"]
         management_grp = os.environ["MANGRP"]
 
-        credentials = Connections().get_authenticated_client()
+        credentials = AzureConnections().get_authenticated_client()
         df = EvaluatePolicies(credentials).correlate_management_grp_data(
             management_grp=management_grp, subscription=subscription
         )

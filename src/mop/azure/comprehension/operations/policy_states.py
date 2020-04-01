@@ -1,13 +1,11 @@
-import os
 from configparser import ConfigParser
-import random
 from tenacity import retry, wait_random, stop_after_attempt
 from azure.mgmt.policyinsights.models import QueryFailureException
 from azure.mgmt.policyinsights.models import QueryOptions
 from azure.mgmt.policyinsights.policy_insights_client import PolicyInsightsClient
 from dotenv import load_dotenv
 
-from mop.azure.connections import request_authenticated_session
+from mop.framework.azure_connections import request_authenticated_azure_session
 from mop.azure.utils.create_configuration import (
     CONFVARIABLES,
     change_dir,
@@ -35,7 +33,7 @@ class PolicyStates:
 
         api_endpoint = api_endpoint.format(*args)
 
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             return req.post(api_endpoint).json
 
     def policy_states_summarize_for_policy_definition(self, subscriptionId, policyDefinitionName):
@@ -49,7 +47,7 @@ class PolicyStates:
         api_endpoint = self.config["AZURESDK"]["policy_states_summarize_for_policy_definition"]
         api_endpoint = api_endpoint.format(subscriptionId=subscriptionId, policyDefinitionName=policyDefinitionName)
 
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             policy_states_summarize_for_policy_definition = req.post(api_endpoint)
 
         return policy_states_summarize_for_policy_definition
@@ -63,7 +61,7 @@ class PolicyStates:
         api_endpoint = self.config["AZURESDK"]["policy_states_summarize_for_resource_group"]
         api_endpoint = api_endpoint.format(subscriptionId=subscriptionId)
 
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             summarized_resource_group_function = req.post(api_endpoint).json
 
         return summarized_resource_group_function
@@ -83,7 +81,7 @@ class PolicyStates:
             if authenticated_session:
                 query_results_for_policy_definitions_function = authenticated_session.post(api_endpoint).json
             else:
-                with request_authenticated_session() as req:
+                with request_authenticated_azure_session() as req:
                     query_results_for_policy_definitions_function = req.post(api_endpoint).json
 
         except UnboundLocalError:
@@ -101,7 +99,7 @@ class PolicyStates:
         api_endpoint = self.config["AZURESDK"]["policystatessummarizeforresource"]
         api_endpoint = api_endpoint.format(resourceId=resourceId)
 
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             resource_policy_function = req.post(api_endpoint).json
         return resource_policy_function
 
@@ -112,7 +110,7 @@ class PolicyStates:
         :return:
         """
         api_endpoint = self.config["AZURESDK"]["policystatessummarizeforsubscriptionquery"]
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             policy_states_summary_subscription = req.post(api_endpoint).json
 
         return policy_states_summary_subscription
@@ -122,7 +120,7 @@ class PolicyStates:
         api_endpoint = self.config["AZURESDK"]["policy_states_list_query_results_for_management_group"]
         api_endpoint = api_endpoint.format(managementGroupName=management_grp,
                                            policyStatesResource=policyStatesResource)
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             policy_states_summary_subscription = req.post(api_endpoint).json
 
         return policy_states_summary_subscription
@@ -138,7 +136,7 @@ class PolicyStates:
         api_endpoint = self.config["AZURESDK"]["policy_states_summarize_for_subscription"]
         api_endpoint = api_endpoint.format(subscriptionId=subscription)
 
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             policy_states_summary_subscription_response = req.post(api_endpoint)
 
         return policy_states_summary_subscription_response
@@ -156,7 +154,7 @@ class PolicyStates:
             subscriptionId=subscriptionId, filter=filter_condition
         )
 
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             policy_states_summary_subscription = req.post(api_endpoint).json
 
         return policy_states_summary_subscription
@@ -166,7 +164,7 @@ class PolicyStates:
         api_endpoint = self.config["AZURESDK"]["policy_states_filter_and_multiple_groups"]
         api_endpoint = api_endpoint.format(subscriptionId=subscriptionId)
 
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             r_policy_states_filter_and_multiple_groups = req.post(api_endpoint).json()
 
         return r_policy_states_filter_and_multiple_groups
@@ -180,7 +178,7 @@ class PolicyStates:
         api_endpoint = self.config["AZURESDK"]["policy_states_filter_and_multiple_groups"]
         api_endpoint = api_endpoint.format(subscriptionId=subscriptionId)
 
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             r_policy_states_filter_and_multiple_groups = req.post(api_endpoint).json
 
         return r_policy_states_filter_and_multiple_groups

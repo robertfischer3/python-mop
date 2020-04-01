@@ -2,7 +2,7 @@ from configparser import ConfigParser
 
 from dotenv import load_dotenv
 
-from mop.azure.connections import request_authenticated_session
+from mop.framework.azure_connections import request_authenticated_azure_session
 from mop.azure.utils.create_configuration import (
     change_dir,
     OPERATIONSPATH,
@@ -26,6 +26,6 @@ class PolicyStatesResource:
         api_endpoint = self.config["AZURESDK"]["policystatessummarizeforresource"]
         api_endpoint = api_endpoint.format(resourceId=resourceId)
 
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             resource_policy_function = req.post(api_endpoint).json
         return resource_policy_function

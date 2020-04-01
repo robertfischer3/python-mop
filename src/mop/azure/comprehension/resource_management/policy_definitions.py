@@ -8,7 +8,7 @@ from azure.mgmt.resource.policy import PolicyClient
 from dotenv import load_dotenv
 from tenacity import retry, wait_random, stop_after_attempt
 
-from mop.azure.connections import request_authenticated_session, Connections
+from mop.framework.azure_connections import request_authenticated_azure_session, AzureConnections
 from mop.azure.utils.create_configuration import (
     change_dir,
     CONFVARIABLES,
@@ -23,7 +23,7 @@ class PolicyDefinition:
             self.config = ConfigParser()
             self.config.read(CONFVARIABLES)
 
-        self.credentials = Connections().get_authenticated_client()
+        self.credentials = AzureConnections().get_authenticated_client()
 
     @retry(wait=wait_random(min=1, max=2), stop=stop_after_attempt(4))
     def get_policy_definition(self, subscription_id, policy_definition_name):
@@ -79,7 +79,7 @@ class PolicyDefinition:
 
         headers = {'content-type': 'application/json'}
 
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             policy_definition = req.put(api_endpoint, data=policy_definition_body, headers=headers)
 
         return policy_definition
@@ -96,7 +96,7 @@ class PolicyDefinition:
                 api_endpoint = api_endpoint.format(subscriptionId=subscriptionId,
                                                    policyDefinitionName=policy_definition_name)
 
-                with request_authenticated_session() as req:
+                with request_authenticated_azure_session() as req:
                     policy_definition = req.get(api_endpoint)
                     rest_api_responses.append(policy_definition)
 
@@ -181,7 +181,7 @@ class PolicyDefinition:
         api_endpoint = api_endpoint.format(subscriptionId=subscriptionId, policyAssignmentName=policyAssignmentName)
         headers = {'content-type': 'application/json'}
 
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             policy_assignment = req.put(api_endpoint,
                                         data=json.dumps(policyAssignmentBody, indent=4, ensure_ascii=False),
                                         headers=headers)
@@ -201,7 +201,7 @@ class PolicyDefinition:
         api_endpoint = api_endpoint.format(subscriptionId=subscriptionId, policyDefinitionName=policy_definition_name)
         headers = {'content-type': 'application/json'}
 
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             policy_definitions = req.put(api_endpoint, data=policy_definition_body, headers=headers)
 
         return policy_definitions
@@ -219,7 +219,7 @@ class PolicyDefinition:
 
         api_endpoint = api_endpoint.format(*args)
 
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             return req.post(api_endpoint)
 
     @retry(wait=wait_random(min=1, max=2), stop=stop_after_attempt(4))
@@ -231,7 +231,7 @@ class PolicyDefinition:
             policyDefinitionId=policyDefinitionId,
             api_version=api_version)
 
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             policy_definitions = req.get(api_endpoint)
 
         return policy_definitions
@@ -246,7 +246,7 @@ class PolicyDefinition:
         api_endpoint = self.config["AZURESDK"]["policy_definitions_list"]
         api_endpoint = api_endpoint.format(subscriptionId=subscriptionId)
 
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             policy_definitions = req.get(api_endpoint)
 
         return policy_definitions
@@ -257,7 +257,7 @@ class PolicyDefinition:
 
         :param subscription_id:
         :param policy_definition_name:
-        :param request_authenticated_session:
+        :param request_authenticated_prisma_session:
         :return:
         """
 
@@ -275,7 +275,7 @@ class PolicyDefinition:
             if policy_definitions_function.status_code == 404:
                 policy_definitions_function = authenticated_session.get(api_endpoint_2)
         else:
-            with request_authenticated_session() as req:
+            with request_authenticated_azure_session() as req:
                 policy_definitions_function = req.get(api_endpoint)
 
                 if policy_definitions_function.status_code == 404:
@@ -295,7 +295,7 @@ class PolicyDefinition:
         if authenticated_session:
             response = authenticated_session.get(api_endpoint)
         else:
-            with request_authenticated_session() as req:
+            with request_authenticated_azure_session() as req:
                 response = req.get(api_endpoint)
         if response is not None and response.status_code == 200:
             return response

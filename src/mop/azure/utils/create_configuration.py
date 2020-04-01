@@ -84,7 +84,20 @@ def create_baseline_configuration(generate_test=True):
         'virtual_networks_list': 'https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/virtualNetworks?api-version=2019-09-01',
         'virtual_networks_list_all': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.Network/virtualNetworks?api-version=2019-09-01',
         'virtual_networks_list_usage': 'https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/virtualNetworks/{virtualNetworkName}/usages?api-version=2019-09-01',
-        'azure_devops_repositories_list': 'https://dev.azure.com/{organization}/{project}/_apis/git/repositories?api-version=5.1'
+        'azure_devops_repositories_list': 'https://dev.azure.com/{organization}/{project}/_apis/git/repositories?api-version=5.1',
+        'vaults_list': "https://management.azure.com/subscriptions/{subscriptionId}/resources?$filter=resourceType eq 'Microsoft.KeyVault/vaults'&api-version={apiversion}",
+        'vaults_list_by_subscription': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.KeyVault/vaults?api-version={apiversion}',
+        'vaults_get_by_id': '{management_root}{id}?api-version={apiversion}',
+        'keyvault_get': '{vaultBaseUrl}/keys/{key-name}/{key-version}?api-version=7.0',
+        'keyvault_get_keys': '{vaultBaseUrl}/keys?api-version = 7.0'
+
+    }
+    config["PRISMACLOUD"] = {
+        'api2_eu_login': 'https://api2.eu.prismacloud.io/login',
+        'api2_eu': 'https://api2.eu.prismacloud.io',
+        'policy': '{cloud_api}/policy',
+        'compliance': '{cloud_api}/compliance',
+        'filter_policy_suggest': '{cloud_api}/filter/policy/suggest'
     }
 
     config["GIT"] = {

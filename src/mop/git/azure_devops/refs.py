@@ -1,10 +1,8 @@
 from configparser import ConfigParser
-from azure.devops.connection import Connection
-from msrest.authentication import BasicAuthentication
 
 from dotenv import load_dotenv
 
-from mop.azure.connections import request_authenticated_session, Connections
+from mop.framework.azure_connections import request_authenticated_azure_session
 from mop.azure.utils.create_configuration import (
     change_dir,
     CONFVARIABLES,
@@ -27,7 +25,7 @@ class AzureDevOpsRefs():
         api_endpoint = api_endpoint.format(organization=organization,
                                            project=project, repositoryId=repositoryId, filterValue=filterValue)
 
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             refs_list = req.get(api_endpoint, auth=('', self.personal_access_token))
 
         return refs_list

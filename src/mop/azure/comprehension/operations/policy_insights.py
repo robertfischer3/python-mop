@@ -1,15 +1,9 @@
-import os
-import pandas as pd
-from azure.mgmt.policyinsights.models import QueryOptions
-
 from azure.mgmt.resource.policy import PolicyClient
 from azure.mgmt.policyinsights import PolicyInsightsClient
-from azure.mgmt.managementgroups import operations
 
-import adal, uuid, time, sys
 from dotenv import load_dotenv
 
-from mop.azure.connections import request_authenticated_session
+from mop.framework.azure_connections import request_authenticated_azure_session
 
 
 class PolicyInsights:
@@ -32,7 +26,7 @@ class PolicyInsights:
 
         api_endpoint = api_endpoint.format(*args)
 
-        with request_authenticated_session() as req:
+        with request_authenticated_azure_session() as req:
             return req.post(api_endpoint).json()
 
     def policy_insights_client_query(

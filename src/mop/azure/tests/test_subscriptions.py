@@ -5,7 +5,7 @@ import unittest
 import jmespath
 from configparser import ConfigParser
 from dotenv import load_dotenv
-from mop.azure.connections import Connections
+from mop.framework.azure_connections import AzureConnections
 from mop.azure.comprehension.operations.subscriptions import Subscriptions
 from mop.azure.utils.create_configuration import (
     change_dir,
@@ -76,7 +76,7 @@ class TestResourcesSubscriptions(unittest.TestCase):
 
         :return:
         """
-        credentials = Connections().get_authenticated_client()
+        credentials = AzureConnections().get_authenticated_client()
         results = Subscriptions().list_displayname_and_id()
         self.assertGreater(len(results), 0)
 
