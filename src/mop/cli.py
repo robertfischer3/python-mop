@@ -15,14 +15,17 @@ Why does this file exist, and why not put this in __main__?
   Also see (1) from http://click.pocoo.org/5/setuptools/#setuptools-integration
 """
 import argparse
+from mop.framework.commands import Command
 
-parser = argparse.ArgumentParser(description="Command description.")
-parser.add_argument(
-    "names", metavar="NAME", nargs=argparse.ZERO_OR_MORE, help="A name of something."
-)
+parser = argparse.ArgumentParser(description="Welcome to Mop!\nCommand descriptions.", epilog='Robert Fischer, 2020')
+
+parser.add_argument('-p', '--policy', action='store', help='Policy command palete')
+parser.add_argument('-pyp', '--python_policy', action='store', help='Python policies command palete')
 
 
 def main(args=None):
     args = parser.parse_args(args=args)
-    print(args.names)
+    print(args.policy)
     print("launched...")
+    cmd = Command(args)
+    cmd.execute()

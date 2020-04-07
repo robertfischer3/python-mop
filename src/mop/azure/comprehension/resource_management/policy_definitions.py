@@ -1,8 +1,10 @@
+import datetime
 import glob
 import json
 import os
 from configparser import ConfigParser
 
+import jmespath
 import pandas as pd
 from azure.mgmt.resource.policy import PolicyClient
 from dotenv import load_dotenv
@@ -72,7 +74,13 @@ class PolicyDefinition:
 
     retry(wait=wait_random(min=1, max=3), stop=stop_after_attempt(4))
     def create_management_group_definition(self, managementGroupId, policyDefinitionName, policy_definition_body):
-
+        """
+        Create a management level group policy
+        :param managementGroupId:
+        :param policyDefinitionName:
+        :param policy_definition_body:
+        :return:
+        """
         api_endpoint = self.config["AZURESDK"]['policy_definitions_create_or_update_at_management_group']
         api_endpoint = api_endpoint.format(managementGroupId=managementGroupId,
                                            policyDefinitionName=policyDefinitionName)
@@ -83,6 +91,75 @@ class PolicyDefinition:
             policy_definition = req.put(api_endpoint, data=policy_definition_body, headers=headers)
 
         return policy_definition
+
+    def create_management_group_policy_assignment_at_subscription_level(self, managementGroupId, subscriptionId,
+                                                                        policyDefinitionName):
+        policy_assignments = list()
+        rest_api_responses = list()
+
+        created = datetime.datetime.utcnow()
+
+        api_endpoint = self.config['AZURESDK']['policy_definitions_get_at_management_group']
+        api_endpoint = api_endpoint.format(managementGroupId=managementGroupId,
+                                           policyDefinitionName=policyDefinitionName)
+
+        with request_authenticated_azure_session() as req:
+            policy_definition_response = req.get(api_endpoint)
+
+        if policy_definition_response.status_code == 200:
+            policy_definition_json = policy_definition_response.json()
+            if policy_definition_json["name"]:
+                id = policy_definition_json["id"]
+                displayName = policy_definition_json["name"]
+                description = policy_definition_json["name"]
+                createdBy = ""
+                category = None
+                parameters = {}
+
+                if policy_definition_json["properties"]:
+                    if policy_definition_json["properties"]["displayName"]:
+                        displayName = policy_definition_json["properties"]["displayName"]
+                    if policy_definition_json["properties"]["description"]:
+                        description = policy_definition_json["properties"]["description"]
+                    if 'parameters' in policy_definition_json["properties"]:
+                        parameter_dict = policy_definition_json["properties"]['parameters']
+                        defaultValues = jmespath.search("*.defaultValue", data=parameter_dict)
+                        for key in parameter_dict.keys():
+                            if 'defaultValue' in parameter_dict[key]:
+                                value = parameter_dict[key]['defaultValue']
+                                parameters[key] = {"value": value}
+                        if len(parameter_dict) > 0:
+                            if len(parameter_dict) != len(parameters):
+                                print("Policy assignment {} skipped".format(policyDefinitionName), len(parameter_dict),
+                                      len(parameters))
+                                return None
+
+                    if policy_definition_json["properties"]["metadata"]:
+                        createdBy = policy_definition_json["properties"]["metadata"]["createdBy"]
+                        if "metadata" in policy_definition_json["properties"] and "category" in \
+                            policy_definition_json["properties"]["metadata"]:
+                            category = policy_definition_json["properties"]["metadata"]["category"]
+
+                    policy_assignment_request_body = {
+                        "properties": {
+                            "displayName": displayName,
+                            "description": description,
+                            "metadata": {
+                                "assignedBy": createdBy
+                            },
+                            "policyDefinitionId": id,
+                            "parameters": parameters
+                        }
+                    }
+                    if category:
+                        policy_assignment_request_body["properties"]["metadata"]["category"] = category
+
+                    policy_assignment_response = self.create_policy_assignment(subscriptionId=subscriptionId,
+                                                                               policyAssignmentName=
+                                                                               policy_definition_json["name"],
+                                                                               policyAssignmentBody=policy_assignment_request_body)
+
+        return policy_assignment_response
 
     def create_subscription_policy_assignment(self, subscriptionId, policy_definitions_dict):
 

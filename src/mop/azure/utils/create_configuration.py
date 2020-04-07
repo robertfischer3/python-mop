@@ -89,8 +89,7 @@ def create_baseline_configuration(generate_test=True):
         'vaults_list_by_subscription': 'https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.KeyVault/vaults?api-version={apiversion}',
         'vaults_get_by_id': '{management_root}{id}?api-version={apiversion}',
         'keyvault_get': '{vaultBaseUrl}/keys/{key-name}/{key-version}?api-version=7.0',
-        'keyvault_get_keys': '{vaultBaseUrl}/keys?api-version = 7.0'
-
+        'keyvault_get_keys': '{vaultBaseUrl}/keys?api-version = 7.0',
     }
     config["PRISMACLOUD"] = {
         'api2_eu_login': 'https://api2.eu.prismacloud.io/login',
@@ -100,6 +99,10 @@ def create_baseline_configuration(generate_test=True):
         'filter_policy_suggest': '{cloud_api}/filter/policy/suggest'
     }
 
+    config["PLUGINS"] = {
+        'plugin_python_policies': 'glbl_pr_sec',
+        'plugin_database': 'test_db_plugin'
+    }
     config["GIT"] = {
         'azure_project_01': 'testproject',
         'azure_repository_id_01': 'b3e721c7-0a2a-4712-b37a-2df3ce32f4cf',
