@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 
 from mop.azure.analysis.baseline.aggregate_subscriptions import AggregateSubscriptions
 from mop.azure.comprehension.resource_management.policy_definitions import PolicyDefinition
-
 from mop.azure.utils.create_configuration import OPERATIONSPATH, change_dir, TESTVARIABLES
 
 
@@ -65,18 +64,73 @@ class TestPolicyDefinitionsCase(unittest.TestCase):
 
         policy_definition_files = management_grp_policy_definition.get_json_policy_definitions()
 
+        results = {}
+
         for policy_definition_file in policy_definition_files:
             with open(policy_definition_file['policy_definition_path']) as definition:
                 policy_definition_body = json.load(definition)
                 if 'name' in policy_definition_body:
                     policyDefinitionName = policy_definition_body['name']
+                else:
+                    self.assertTrue(False, msg="Policy Definition Name not found")
 
-            policy_definition_body = json.dumps(policy_definition_body)
-            response = management_grp_policy_definition.create_management_group_definition(management_grp_id,
-                                                                                           policyDefinitionName=policyDefinitionName,
-                                                                                           policy_definition_body=policy_definition_body)
-            print(response.status_code)
+                if policyDefinitionName:
+                    policy_definition_body = json.dumps(policy_definition_body)
+                    response = management_grp_policy_definition.create_management_group_definition(management_grp_id,
+                                                                                                   policyDefinitionName=policyDefinitionName,
+                                                                                                   policy_definition_body=policy_definition_body)
+                    print(policyDefinitionName, response.status_code)
+                    results[policyDefinitionName] = response.status_code
 
+        for key in results.keys():
+            self.assertTrue(results[key] in range(200, 299), 'Policy creation error')
+
+    def test_create_management_group_assignment_at_subscription_level(self):
+
+        management_grp_id = self.config['DEFAULT']['management_grp_id']
+
+        policy_definition = PolicyDefinition()
+        policy_definition_files = policy_definition.get_json_policy_definitions()
+
+        batch_uuid = uuid.uuid4()
+
+        aggregate_subscriptions = AggregateSubscriptions()
+        subscriptions = aggregate_subscriptions.list_subscriptions()
+        for subscription in subscriptions:
+            for policy_definition_file in policy_definition_files:
+                with open(policy_definition_file['policy_definition_path']) as definition:
+                    policy_definition_body = json.load(definition)
+                    result = self.create_policy_assignment_with_management_group_policy(
+                        management_grp_id=management_grp_id,
+                        policy_definition_body=policy_definition_body,
+                        subcription_id=subscription.subscription_id)
+                    if not result:
+                        print("Assignment not created")
+
+    def create_policy_assignment_with_management_group_policy(self, management_grp_id, policy_definition_body,
+                                                              subcription_id):
+        policy_definition = PolicyDefinition()
+        if 'name' in policy_definition_body:
+            policyDefinitionName = policy_definition_body['name']
+        else:
+            self.assertTrue(False, msg="Policy Definition Name not found")
+
+        if policyDefinitionName:
+            policy_assignment_response = policy_definition.create_management_group_policy_assignment_at_subscription_level(
+                managementGroupId=management_grp_id,
+                subscriptionId=subcription_id,
+                policyDefinitionName=policyDefinitionName)
+
+            if policy_assignment_response and policy_assignment_response.status_code in range(200, 299):
+                print("Policy assignment {} with code {} in subscription {}".format(policyDefinitionName,
+                                                                                    policy_assignment_response.status_code,
+                                                                                    subcription_id))
+            elif policy_assignment_response and policy_assignment_response.status_code not in range(200, 299):
+                print(policy_assignment_response)
+
+            return policy_assignment_response
+
+            # self.assertTrue(False, "Policy cannot be assigned, parameters not specified")
 
     def test_create_single_subscription_policy_assignment(self):
         '''

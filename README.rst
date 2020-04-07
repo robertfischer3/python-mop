@@ -10,8 +10,7 @@ The Mop Project (alpha)
 
 Welcome to Mop project!
 
-|Test results|![Private Network Testing](https://img.shields.io/badge/tests-current%20tests-yellow)  [Private Test Server Results](https://github.com/robertfischer3/python-mop/blob/master/testingresults/test-16-dec-2019.html)|
-|Commits per week|![Commits](https://img.shields.io/github/commit-activity/w/robertfischer3/python-mop)|
+
 
 Why Mop? You need mop to clean up your cloud mess!
 
@@ -23,11 +22,18 @@ The Mop project seeks to build cloud comprehensions to feed machine learning.  T
 stages. Currently the project framework in directed to adopting the framework controls found in the
 three major cloud providers: Azure, AWS, and Google Cloud.
 
-Why three public clouds? Why not focus on just one? Mop seek to foster the understand of utility computing by eventualing
-employing artificial intelligence to the comprehensions obtained by the framework
+Why three public clouds? Why not focus on just one? Mop seek to foster the understand of utility computing by eventually
+employing artificial intelligence to the comprehensions obtained by the framework.
 
 Mop is open source Python project used to compile Public Cloud resource compliance information.  This project is in the
-early stages of development focus first on Azure.
+early stages of development focus first on Azure. However, efforts for AWS and Google Cloud are now underway.
+
+Twelve Factor Development:
+==========================
+Mop strives to become a Twelve Factor application.  In the current alpha, the are parts of the application are not compliant
+yet. However, the overall intention is to follow the Twelve Factor principles.
+
+https://12factor.net/
 
 Project Stages:
 ================

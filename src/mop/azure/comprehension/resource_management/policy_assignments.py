@@ -31,3 +31,4 @@ class PolicyAssignments():
             policy_assignments_request = req.get(api_endpoint)
 
         return policy_assignments_request
+
