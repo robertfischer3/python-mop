@@ -11,14 +11,6 @@ By Robert Fischer
 
 Welcome to Mop project! Mop is an open source project written in Python.
 
-.. image:: https://img.shields.io/badge/tests-current%20tests-yellow
-https://github.com/robertfischer3/python-mop/blob/master/testingresults/test-16-dec-2019.html
-
-
-![Github]https://img.shields.io/github/commit-activity/w/robertfischer3/python-mop
-https://github.com/robertfischer3/python-mop/pulse
-
-
 Why Mop? You need mop to clean up your cloud mess!
 
 Organizations large and small love the agility of the cloud.  Most embrace the cloud for the ability to create compute
