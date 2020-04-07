@@ -1,4 +1,4 @@
-.. image:: https://publicdomainvectors.org/photos/secchio-e-spugna-archite-01.png
+.. image:: mop.png
     :width: 150px
     :align: left
     :height: 150px
@@ -7,9 +7,16 @@
 =======================
 The Mop Project (alpha)
 =======================
+By Robert Fischer
 
-Welcome to Mop project!
+Welcome to Mop project! Mop is an open source project written in Python.
 
+.. image:: https://img.shields.io/badge/tests-current%20tests-yellow
+https://github.com/robertfischer3/python-mop/blob/master/testingresults/test-16-dec-2019.html
+
+
+![Github]https://img.shields.io/github/commit-activity/w/robertfischer3/python-mop
+https://github.com/robertfischer3/python-mop/pulse
 
 
 Why Mop? You need mop to clean up your cloud mess!
@@ -43,6 +50,22 @@ Project Stages:
 
 -Apply machine learning to develop idea configuration models
 
+Architectural Features
+======================
+This architecture makes use of the following techniques:
+Metaprogramming
+Object Relational Mapping (ORM)
+Decorators
+Composition
+Templated Code
+Cookie Current project template
+Dynamic Service configuration
+Code generating code
+and more...
+
+Active Deployments
+=================
+This project is being used and tested in one of the worlds largest companies. Since this testing provides an assessment of production security configurations, the test occurs in secure implementation. However, this project is looking for vendor sponsorship to enable Travis build reporting. 
 
 License
 ========
@@ -52,8 +75,10 @@ Installation
 ============
 
 ::
+This project makes heavy use of pipenv, which you likely need to install
+    pip3 install pipenv
 
-    pip install mop
+    pip3 install mop
 
 You can also install the in-development version with::
 
@@ -74,11 +99,7 @@ Framework Features
 
 Nanscent pluggable architectures using Pluggy
 
-.. image:: https://pluggy.readthedocs.io/en/latest/_static/img/plug.png
-    :width: 150px
-    :align: left
-    :height: 150px
-    :alt: alternate text
+.. image:: pluggy.png
 
 Easy data storage and analysis using databases and Alchemy ORM
 
@@ -96,8 +117,7 @@ This project currently calls directly against Azure services.  While Azure never
 traffic is charged.  Further the test results below has executed against a very large dataset.
 
 The test dataset included over 490 Azure production subscriptions. This framework mines security information.  Hence hosting
-this testing on Travis or others.  To protect the test data owners, the testing could only occur on private networks.  Given
-this product is alpha, there are still some bug fixes to be aware of.  The latest build and test result will
+this testing on Travis or others carry with it issues.  To protect the test data owners, the testing could only occur on private networks.  Given this product is alpha, there are still some bug fixes to be aware of.  The latest build and test result will
 be posted here going forward:
 
 https://github.com/robertfischer3/python-mop/blob/master/testingresults/test-16-dec-2019.html
