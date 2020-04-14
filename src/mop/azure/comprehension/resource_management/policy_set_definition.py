@@ -2,6 +2,8 @@ import json
 import logging
 import uuid
 from configparser import ConfigParser
+
+import jmespath
 from tenacity import retry, wait_random, stop_after_attempt
 from dotenv import load_dotenv
 
@@ -56,11 +58,17 @@ class PolicySetDefinition:
                 if 'parameters' in policyDefinition:
                     parameters_dict = policyDefinition['parameters']
 
+                parameters = self.package_parameters_for_assignment(parameters_dict)
+                if parameters is None:
+                    """TODO report policy non-compliance"""
+                    continue
+
                 policyDefinition = {
                     "policyDefinitionId": policyDefinition['properties']['policyDefinitionId'],
                     "policyDefinitionReferenceId": policyDefinitionReferenceId + str(uuid.uuid4()),
                     "parameters": parameters_dict
                 }
+
 
                 policyDefinitionReference.append(policyDefinition)
 
@@ -73,3 +81,15 @@ class PolicySetDefinition:
             policy_set_definition = req.put(api_endpoint, data=policy_set_properties_body, headers=headers)
 
         return policy_set_definition
+
+    def package_parameters_for_assignment(self, parameters_dict):
+        parameters = {}
+        for key in parameters_dict.keys():
+            if 'defaultValue' in parameters_dict[key]:
+                value = parameters_dict[key]['defaultValue']
+                parameters[key] = {"value": value}
+        if len(parameters_dict) > 0:
+            if len(parameters_dict) != len(parameters):
+                print("Policy assignment {} skipped".format('policyDefinitionName'), len(parameters_dict),
+                      len(parameters))
+                return None

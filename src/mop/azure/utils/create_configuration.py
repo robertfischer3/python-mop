@@ -34,6 +34,7 @@ def create_baseline_configuration(generate_test=True):
         "management_grp_id": os.environ["MANGRP"],
         "tenant_id": os.environ["TENANT"],
         "organization": os.environ["ORGANIZATION"],
+        'plugin_root_path': 'src/mop/azure/plugins/',
     }
     """
     The configuration file supports multiple database instances
@@ -53,6 +54,7 @@ def create_baseline_configuration(generate_test=True):
     config["LOGGING"] = {"level": "20"}
     config["AZURESDK"] = {
         'apiversion': '2019-09-01',
+        'graph_version': 'v1.0',
         'get_policy_definition_by_name': 'https://management.azure.com/providers/Microsoft.Authorization/policyDefinitions/{policyDefinitionName}?api-version=2019-09-01',
         'listqueryresultsformanagementgroup': 'https://management.azure.com/providers/Microsoft.Management/managementGroups/{managementGroupName}/providers/Microsoft.PolicyInsights/policyStates/{policyStatesResource}/queryResults?api-version=2018-04-04',
         'management_root': 'https://management.azure.com',
@@ -90,6 +92,13 @@ def create_baseline_configuration(generate_test=True):
         'vaults_get_by_id': '{management_root}{id}?api-version={apiversion}',
         'keyvault_get': '{vaultBaseUrl}/keys/{key-name}/{key-version}?api-version=7.0',
         'keyvault_get_keys': '{vaultBaseUrl}/keys?api-version = 7.0',
+        'graph_directory_list_audits': "https://graph.microsoft.com/{graph_version}/auditLogs/directoryAudits",
+        'graph_directory_get_audit': 'https://graph.microsoft.com/{graph_version}/auditLogs/directoryAudits/{id}',
+        'graph_directory_list_signins': 'https://graph.microsoft.com/{graph_version}/auditLogs/signIns',
+        'graph_directory_get_signin': 'https://graph.microsoft.com/{graph_version}/auditLogs/signIns/{id}',
+        'graph_list_users': 'https://graph.microsoft.com/{graph_version}/users',
+        'graph_get_user': 'https://graph.microsoft.com/{graph_version}/users/{id}',
+        'graph_get_user_upn': 'https://graph.microsoft.com/{graph_version}/users/{userPricipalName}'
     }
     config["PRISMACLOUD"] = {
         'api2_eu_login': 'https://api2.eu.prismacloud.io/login',
@@ -100,7 +109,7 @@ def create_baseline_configuration(generate_test=True):
     }
 
     config["PLUGINS"] = {
-        'plugin_python_policies': 'glbl_pr_sec',
+        'plugin_python_policies': 'pypolicy/glbl_pr_sec*.py',
         'plugin_database': 'test_db_plugin'
     }
     config["GIT"] = {
