@@ -38,10 +38,22 @@ class AggregateSubscriptions(BaseDb):
         subscriptions = Subscriptions()
         return subscriptions.dataframe_management_grp_subcriptions(management_grp)
 
-    def create_subscriptions(self, subscriptions_dataframe):
-        subscriptions_dataframe['batch_uuid'] = uuid.uuid4()
-        subscriptions_dataframe['created'] = datetime.datetime.utcnow()
-        subscriptions_dataframe['modified'] = datetime.datetime.utcnow()
+    def save_subscriptions(self, subscriptions_dataframe):
+
+        batch_uuid = uuid.uuid4()
+        created = datetime.datetime.utcnow()
+        modified = datetime.datetime.utcnow()
+
+        session = self.Session()
+        # Execute returns a method the can be executed anywhere more than once
+        models = self.get_db_model(self.engine)
+
+        # subscription_facade = Subscriptions()
+        # subscription_cls = models.classes.subscriptions
+
+        for index, row in subscriptions_dataframe.iterrows():
+            print(index, row['tenant_id'], row['subscription_display_name'], row['management_grp'])
+
         subscriptions_dataframe.to_sql('subscriptions', self.engine, if_exists='append')
 
     def list_subscriptions(self):

@@ -1,5 +1,6 @@
-from mop.framework.azure_connections import request_authenticated_azure_session
+from mop.framework.microsoft_graph_connections import request_authenticated_graph_session
 from mop.framework.mopbase import MopBase
+
 
 
 class DirectoryAudit(MopBase):
@@ -10,7 +11,7 @@ class DirectoryAudit(MopBase):
 
         api_endpoint = api_endpoint.format(graph_version=graph_version)
         # with statement automatically closes the connection
-        with request_authenticated_azure_session() as req:
+        with request_authenticated_graph_session() as req:
             # Returns response object. The response object contains the HTTP status code, and the response of the service
             audits = req.get(api_endpoint)
             return audits
@@ -21,7 +22,7 @@ class DirectoryAudit(MopBase):
 
         api_endpoint = api_endpoint.format(graph_version=graph_version, id=id)
         # with statement automatically closes the connection
-        with request_authenticated_azure_session() as req:
+        with request_authenticated_graph_session() as req:
             # Returns response object. The response object contains the HTTP status code, and the response of the service
             audits = req.get(api_endpoint)
             return audits
@@ -32,7 +33,7 @@ class DirectoryAudit(MopBase):
 
         api_endpoint = api_endpoint.format(graph_version=graph_version)
         # with statement automatically closes the connection
-        with request_authenticated_azure_session() as req:
+        with request_authenticated_graph_session() as req:
             # Returns response object. The response object contains the HTTP status code, and the response of the service
             signins = req.get(api_endpoint)
             return signins
@@ -43,7 +44,7 @@ class DirectoryAudit(MopBase):
 
         api_endpoint = api_endpoint.format(graph_version=graph_version, id=id)
         # with statement automatically closes the connection
-        with request_authenticated_azure_session() as req:
+        with request_authenticated_graph_session() as req:
             # Returns response object. The response object contains the HTTP status code, and the response of the service
             signin = req.get(api_endpoint)
             return signin

@@ -59,6 +59,7 @@ docs/_build
 .*.sw[po]
 .build
 .ve
+.env-bak-dev
 .env
 .cache
 .pytest
@@ -75,3 +76,6 @@ src/*/_version.py
 
 #Mop config files
 *app.config.ini*
+
+#Python Policies
+glbl_pr_sec*.py

@@ -68,22 +68,29 @@ class TestPolicyDefinitionsCase(unittest.TestCase):
 
         for policy_definition_file in policy_definition_files:
             with open(policy_definition_file['policy_definition_path']) as definition:
-                policy_definition_body = json.load(definition)
+                try:
+                    policy_definition_body = json.load(definition)
+                except:
+                    print("Creation failed for ", policy_definition_file['policy_defintion_name'])
+                    continue
+
                 if 'name' in policy_definition_body:
                     policyDefinitionName = policy_definition_body['name']
-                else:
-                    self.assertTrue(False, msg="Policy Definition Name not found")
 
-                if policyDefinitionName:
-                    policy_definition_body = json.dumps(policy_definition_body)
-                    response = management_grp_policy_definition.create_management_group_definition(management_grp_id,
-                                                                                                   policyDefinitionName=policyDefinitionName,
-                                                                                                   policy_definition_body=policy_definition_body)
-                    print(policyDefinitionName, response.status_code)
-                    results[policyDefinitionName] = response.status_code
+                    if policyDefinitionName:
+                        policy_definition_body = json.dumps(policy_definition_body)
+                        response = management_grp_policy_definition.create_management_group_definition(
+                            management_grp_id,
+                            policyDefinitionName=policyDefinitionName,
+                            policy_definition_body=policy_definition_body)
+                        print(policyDefinitionName, response.status_code)
+                        results[policyDefinitionName] = response.status_code
+                else:
+                    self.assertTrue(False, msg="Policy Definition Name not found {}".format(policy_definition_file))
 
         for key in results.keys():
-            self.assertTrue(results[key] in range(200, 299), 'Policy creation error')
+            if results[key] not in range(200, 299):
+                print('Policy creation error {}'.format(key))
 
     def test_create_management_group_assignment_at_subscription_level(self):
 
@@ -96,16 +103,24 @@ class TestPolicyDefinitionsCase(unittest.TestCase):
 
         aggregate_subscriptions = AggregateSubscriptions()
         subscriptions = aggregate_subscriptions.list_subscriptions()
+
+        subscriptions.reverse()
+
         for subscription in subscriptions:
             for policy_definition_file in policy_definition_files:
                 with open(policy_definition_file['policy_definition_path']) as definition:
-                    policy_definition_body = json.load(definition)
-                    result = self.create_policy_assignment_with_management_group_policy(
-                        management_grp_id=management_grp_id,
-                        policy_definition_body=policy_definition_body,
-                        subcription_id=subscription.subscription_id)
-                    if not result:
-                        print("Assignment not created")
+                    try:
+                        policy_definition_body = json.load(definition)
+                        result = self.create_policy_assignment_with_management_group_policy(
+                            management_grp_id=management_grp_id,
+                            policy_definition_body=policy_definition_body,
+                            subcription_id=subscription.subscription_id)
+                        if not result:
+                            print("{}: Assignment not created, {}".format(subscription.subscription_id,
+                                                                          policy_definition_file[
+                                                                              'policy_definition_path']))
+                    except json.decoder.JSONDecodeError as jason_error:
+                        print(jason_error.msg)
 
     def create_policy_assignment_with_management_group_policy(self, management_grp_id, policy_definition_body,
                                                               subcription_id):

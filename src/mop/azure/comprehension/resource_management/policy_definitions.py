@@ -58,7 +58,7 @@ class PolicyDefinition:
     def get_json_policy_definitions(self):
         paths = list()
         if os.getcwd().endswith("tests"):
-            search_path = "../comprehension/resource_management/policydefinitions"
+            search_path = "../comprehension/resource_management/policydefinitions/production"
         else:
             search_path = "policydefinitions"
         with change_dir(search_path):
@@ -92,6 +92,7 @@ class PolicyDefinition:
 
         return policy_definition
 
+    retry(wait=wait_random(min=1, max=3), stop=stop_after_attempt(4))
     def create_management_group_policy_assignment_at_subscription_level(self, managementGroupId, subscriptionId,
                                                                         policyDefinitionName):
         policy_assignments = list()
@@ -106,6 +107,8 @@ class PolicyDefinition:
         with request_authenticated_azure_session() as req:
             policy_definition_response = req.get(api_endpoint)
 
+        policy_assignment_response = None
+
         if policy_definition_response.status_code == 200:
             policy_definition_json = policy_definition_response.json()
             if policy_definition_json["name"]:
@@ -119,8 +122,10 @@ class PolicyDefinition:
                 if policy_definition_json["properties"]:
                     if policy_definition_json["properties"]["displayName"]:
                         displayName = policy_definition_json["properties"]["displayName"]
-                    if policy_definition_json["properties"]["description"]:
+                    if 'description' in policy_definition_json["properties"]:
                         description = policy_definition_json["properties"]["description"]
+                    else:
+                        print("No decription, using policy name: {}".format(displayName))
                     if 'parameters' in policy_definition_json["properties"]:
                         parameter_dict = policy_definition_json["properties"]['parameters']
                         defaultValues = jmespath.search("*.defaultValue", data=parameter_dict)

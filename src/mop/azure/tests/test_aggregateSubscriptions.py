@@ -17,7 +17,7 @@ class TestAggregateSubscriptions(TestCase):
         management_grp = self.config['DEFAULT']['management_grp_id']
         aggregate_subscriptions = AggregateSubscriptions()
         results = aggregate_subscriptions.get_managment_grp_subscriptions(management_grp)
-        aggregate_subscriptions.create_subscriptions(results)
+        aggregate_subscriptions.save_subscriptions(results)
 
     def test_aggregate_tags(self):
         aggregate_subcription_tags = AggregateSubscriptions()
