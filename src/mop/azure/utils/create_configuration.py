@@ -23,7 +23,10 @@ def change_dir(destination):
 
 def create_baseline_configuration(generate_test=True):
     """
-        The method creates the api configuration file for Azure API calls.  As Microsoft changes
+        The method creates the api configuration file for Azure API calls.  As Microsoft changes the API, the
+        methods can change with the API by altering the signatures in this generated method or in the resulting
+        configuration files.
+
     :return:
     """
     load_dotenv()
@@ -47,6 +50,12 @@ def create_baseline_configuration(generate_test=True):
         'dialect':'mssql'
     }
     }
+
+    config["LOG_ANALYTICS"] = {'instance01': {
+        'workspace_id': os.environ['LOG_ANALYTICS_WORKSPACE_ID']
+    }
+    }
+
     config["FILTERS"] = {
         "policy_definition_category": "Security",
         "policy_definition_name_01": ""
