@@ -293,8 +293,7 @@ class PolicyCompliance(BaseDb):
 
         for subscription in subscriptions_list:
             tenant_id = subscription.tenant_id
-            print(subscription.subscription_id)
-
+            print("Subscription: {}, Policy Name {}".format(subscription.subscription_id, policy_definition_name))
             policy_states_of_definition = policy_states.policy_states_summarize_for_policy_definition(
                 subscriptionId=subscription.subscription_id,
                 policyDefinitionName=policy_definition_name).json()
@@ -328,6 +327,63 @@ class PolicyCompliance(BaseDb):
 
                 session.bulk_save_objects(bulk_insert)
                 session.commit()
+
+    def summarize_management_group_policy_definitions(self, management_grp):
+        """
+        Finds policy definitions at the management group level, creates database record for analysis
+        """
+
+        batch_uuid = uuid.uuid4()
+        created = datetime.datetime.utcnow()
+
+        models = self.get_db_model(self.engine)
+        FactCompliance = models.classes.factcompliance
+        DimPolicies = models.classes.policydefinitions
+
+        session = self.Session()
+        results = session.query(FactCompliance).all()
+        pf = session.query(DimPolicies).all()
+
+        policies_found = list()
+        bulk_insert = list()
+
+        try:
+
+            management_grp_policies_response = PolicyDefinition().policy_definitions_list_by_management_group(management_grp=management_grp)
+            if management_grp_policies_response.status_code in range(200, 299):
+                management_grp_policies = management_grp_policies_response.json()
+                policy_definition_list = management_grp_policies['value']
+                for policy_definition in policy_definition_list:
+                    if policy_definition:
+                        policy_name = policy_definition['name']
+                        displayName = policy_definition['properties']['displayName']
+                        if 'description' in policy_definition['properties']:
+                            description = policy_definition['properties']['description']
+                        else:
+                            description = policy_definition['properties']['displayName']
+                        policyType = policy_definition['properties']['policyType']
+                        if 'category' in policy_definition['properties']['metadata']:
+                            category = policy_definition['properties']['metadata']['category']
+                        else:
+                            category = ''
+                        print(displayName)
+
+                        policy = DimPolicies(policy_definition_name=policy_name,
+                                             policy_description=description,
+                                             policy_display_name=displayName,
+                                             policy_type=policyType,
+                                             metadata_category=category,
+                                             created=created,
+                                             modified=created,
+                                             batch_uuid=batch_uuid,
+                                             )
+
+                        policies_found.append(policy.policy_definition_name)
+                        bulk_insert.append(policy)
+        finally:
+            session.bulk_save_objects(bulk_insert)
+            session.commit()
+
 
     def summarize_query_results_for_policy_definitions(self):
         """
@@ -395,7 +451,8 @@ class PolicyCompliance(BaseDb):
             session.bulk_save_objects(bulk_insert)
             session.commit()
 
-    def summarize_subscriptions(self, tenant_id, management_grp):
+
+    def summarize_subscriptions(self, tenant_id):
 
         batch_uuid = uuid.uuid4()
         created = datetime.datetime.utcnow()

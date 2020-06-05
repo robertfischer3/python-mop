@@ -8,10 +8,9 @@ from azure.mgmt.resource.policy import PolicyClient
 from azure.mgmt.resource.policy.models import PolicyAssignment
 from tenacity import retry, wait_random, stop_after_attempt
 
-# TODO change refernce to latest
-from azure.mgmt.resource.policy.v2018_03_01.models.error_response_py3 import (
-    ErrorResponseException,
-)
+# TODO change reference to latest
+from azure.mgmt.resource.policy.v2019_06_01.models import ErrorResponseException
+
 from azure.mgmt.subscription import SubscriptionClient
 from dotenv import load_dotenv
 

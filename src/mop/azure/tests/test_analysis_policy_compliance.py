@@ -6,6 +6,7 @@ from configparser import ConfigParser
 from dotenv import load_dotenv
 
 from mop.azure.analysis.policy_compliance import PolicyCompliance
+from mop.azure.comprehension.resource_management.policy_definitions import PolicyDefinition
 from mop.azure.utils.create_configuration import (
     TESTVARIABLES,
     change_dir,
@@ -28,13 +29,22 @@ class TestAnalysisCompileCompliance(unittest.TestCase):
         tenant_id = self.config['DEFAULT']['tenant_id']
 
         summarize = PolicyCompliance()
-        summarize.summarize_subscriptions(tenant_id, management_grp)
+        summarize.summarize_subscriptions(tenant_id)
 
     def test_summarize_query_results_for_policy_definitions(self):
         subscriptionId = self.config["DEFAULT"]["subscription_id"]
+        management_grp = self.config["DEFAULT"]["management_grp_id"]
 
         summarize = PolicyCompliance()
-        summarize.summarize_query_results_for_policy_definitions()
+        summarize.summarize_management_group_policy_definitions(management_grp)
+
+        for policy_definition_name in policy_definition_name_list:
+            summarize = PolicyCompliance()
+            summarize.save_subscription_policies_by_category(category=category)
+            summarize.summarize_fact_compliance_for_definition(category=category,
+                                                               policy_definition_name=policy_definition_name)
+
+        #summarize.summarize_query_results_for_policy_definitions()
 
     def test_compiled_sci(self):
         summarize = PolicyCompliance()

@@ -7,13 +7,19 @@ verify_ssl = true
 
 [packages]
 mop = {editable = true,path = "."}
-azure = "*"
 jmespath = "*"
 openpyxl = "*"
 tenacity = "*"
 pyodbc = "*"
 gitpython = "*"
-
+azure-mgmt-resource = "*"
+azure-keyvault = "*"
+azure-mgmt-subscription = "*"
+pandas = "*"
+sqlalchemy = "*"
+azure-mgmt-managementgroups = "*"
+azure-mgmt-policyinsights = "*"
+azure-cosmos = "*"
 
 [requires]
 python_version = "3.8"

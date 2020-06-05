@@ -7,13 +7,11 @@ from mop.azure.comprehension.operations.subscriptions import Subscriptions
 from dotenv import load_dotenv
 import pandas as pd
 
-from azure.mgmt.policyinsights.models.query_failure_py3 import QueryFailureException
-
 from configparser import ConfigParser
 from mop.azure.utils.create_configuration import CONFVARIABLES, OPERATIONSPATH
 from mop.azure.utils.create_configuration import change_dir
 
-
+#********************** Deprecated - To be removed**********************
 class EvaluatePolicies:
     def __init__(self, credentials):
 

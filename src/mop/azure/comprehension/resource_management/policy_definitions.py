@@ -58,7 +58,7 @@ class PolicyDefinition:
     def get_json_policy_definitions(self):
         paths = list()
         if os.getcwd().endswith("tests"):
-            search_path = "../comprehension/resource_management/policydefinitions/production"
+            search_path = "../comprehension/resource_management/policydefinitions"
         else:
             search_path = "policydefinitions"
         with change_dir(search_path):
@@ -72,7 +72,21 @@ class PolicyDefinition:
                     {"policy_defintion_name": policy_defintion_name, "policy_definition_path": policy_definition_path})
         return paths
 
-    retry(wait=wait_random(min=1, max=3), stop=stop_after_attempt(4))
+    @retry(wait=wait_random(min=1, max=3), stop=stop_after_attempt(4))
+    def get_policy_definitions_list_by_management_group(self, managementGroupId):
+        """
+        Get the policy definitions from a management group
+        :param managementGroupId:
+        """
+        api_endpoint = self.config['AZURESDK']['policy_definitions_list_by_management_group']
+        api_endpoint = api_endpoint.format(managementGroupId=managementGroupId)
+
+        with request_authenticated_azure_session() as req:
+            policy_definitions_response = req.get(api_endpoint)
+
+        return policy_definitions_response
+
+    @retry(wait=wait_random(min=1, max=3), stop=stop_after_attempt(4))
     def create_management_group_definition(self, managementGroupId, policyDefinitionName, policy_definition_body):
         """
         Create a management level group policy
@@ -133,11 +147,11 @@ class PolicyDefinition:
                             if 'defaultValue' in parameter_dict[key]:
                                 value = parameter_dict[key]['defaultValue']
                                 parameters[key] = {"value": value}
-                        if len(parameter_dict) > 0:
-                            if len(parameter_dict) != len(parameters):
-                                print("Policy assignment {} skipped".format(policyDefinitionName), len(parameter_dict),
-                                      len(parameters))
-                                return None
+                        # if len(parameter_dict) > 0:
+                        #     if len(parameter_dict) != len(parameters):
+                        #         print("Policy assignment {} skipped".format(policyDefinitionName), len(parameter_dict),
+                        #               len(parameters))
+                        #         return None
 
                     if policy_definition_json["properties"]["metadata"]:
                         createdBy = policy_definition_json["properties"]["metadata"]["createdBy"]
@@ -403,6 +417,7 @@ class PolicyDefinition:
                     in_category_policies.append(policy)
 
         return in_category_policies
+
 
 def get_policydefinitions_management_grp(creds, base_subscription, management_grp):
     """

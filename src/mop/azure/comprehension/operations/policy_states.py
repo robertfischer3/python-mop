@@ -2,7 +2,7 @@ from configparser import ConfigParser
 from tenacity import retry, wait_random, stop_after_attempt
 from azure.mgmt.policyinsights.models import QueryFailureException
 from azure.mgmt.policyinsights.models import QueryOptions
-from azure.mgmt.policyinsights.policy_insights_client import PolicyInsightsClient
+from azure.mgmt.policyinsights._policy_insights_client import PolicyInsightsClient
 from dotenv import load_dotenv
 
 from mop.framework.azure_connections import request_authenticated_azure_session
