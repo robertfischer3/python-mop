@@ -1,9 +1,13 @@
 import datetime
+from asyncio import Queue
+
+import aiohttp
 import jmespath
 import json
 from codetiming import Timer
 from configparser import ConfigParser
 from dotenv import load_dotenv
+
 
 import collections, json, os, sys, urllib.parse
 import asyncio
@@ -33,37 +37,55 @@ class AsynchPolicyAssignment():
 
         self.policy_assignments_create = self.config["AZURESDK"]["policy_assignments_create"]
         self.queue = asyncio.Queue()
+        self.loop = asyncio.get_event_loop()
 
-
-    def print_response(self, arg):
-        print(arg.json())
-
-    async def get_subscription(self, auth_token):
+    async def get_subscription(self, session, auth_token):
         print('get_subscription...')
         subscription_id = await self.queue.get()
 
         api_endpoint = 'https://management.azure.com/subscriptions/{subscriptionId}?api-version=2020-01-01'.format(
             subscriptionId=subscription_id)
-        headers = headers = {b'Authorization': b'Bearer ' + auth_token.encode('ascii')}
+        # headers = headers = {b'Authorization': b'Bearer ' + auth_token.encode('ascii')}
 
-        res = await treq.get(api_endpoint, headers=headers)
-        content = await res.json()
+        async with session.get(api_endpoint) as response:
+            self.queue.task_done()
+            return await response.text()
 
-        print(content)
-        self.queue.task_done()
+    async def process_data(self, num: int, data: asyncio.Queue):
+        processed = 0
 
-    def main(self, reactor, *args):
-            token = args[0]
-            subscription_id = '82746ea2-9f97-4313-b44a-e9bde3a0a241'
-            self.queue.put_nowait(subscription_id)
-            return defer.ensureDeferred(self.get_subscription(token))
+        while processed < num:
+            item = await data.get()
 
-    def entry_point(self):
+
+    async def main(self, *args):
+        token = args[0]
+        assignment_list = args[1]
+
+        headers = {'Authorization': 'Bearer ' + token}
+
+        for assignment in assignment_list:
+            self.queue.put_nowait(assignment['subscription_id'])
+        tasks = []
+        async with aiohttp.ClientSession(headers=headers) as session:
+            for i in range(self.queue.qsize()):
+                tasks.append(self.get_subscription(session, token))
+
+            responses = await asyncio.gather(*tasks)
+            for response in responses:
+                print(response)
+
+    def batch_assignment(self, assignment_list):
         try:
 
             token_response = AzureSDKAuthentication().authenticate()
             token = token_response["accessToken"]
-            result = react(self.main, [token])
+            try:
+                self.loop.run_until_complete(self.main(token, assignment_list))
 
+            except RuntimeError:
+                print("Oops!")
+            # result = react(self.main, [token])
+            self.loop.close()
         except SystemExit:
             print("Ignoring twisted.internet.task.react sys.exit on completion.")
