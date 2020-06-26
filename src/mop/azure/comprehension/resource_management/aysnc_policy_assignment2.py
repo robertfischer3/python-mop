@@ -1,6 +1,7 @@
 import json
 import re
 from re import Pattern
+import logging
 
 import aiohttp
 import jmespath
@@ -134,10 +135,10 @@ class AsynchPolicyAssignment():
 
     async def main(self, *args):
         token = args[0]
-        assignment_list = args[1]
+        batch_list = args[1]
         headers = {'Authorization': 'Bearer ' + token, 'content-type': 'application/json'}
 
-        await self.queue_assignments(assignment_list)
+        await self.queue_assignments(batch_list)
 
         tasks = []
 
@@ -168,7 +169,7 @@ class AsynchPolicyAssignment():
         if self.filter_category_regex:
             raise NotImplementedError
 
-        for assignment in assignment_list[600:650]:
+        for assignment in assignment_list:
             if len(assignment['policy_definitions']) > 0:
                 policy_definitions = assignment['policy_definitions']
                 for policy_definition in policy_definitions:
@@ -193,17 +194,55 @@ class AsynchPolicyAssignment():
             self.queue_url = url
             self.credential = sas_token
 
+    async def main_loop(self, **kwargs):
+        '''
+
+        :param kwargs:
+        :return:
+        '''
+        if 'token' not in kwargs:
+            raise KeyError
+        token = kwargs['token']
+
+        if 'alternate_list' in kwargs:
+            pass
+
+        if 'batch_list' not in kwargs:
+            raise KeyError
+        batch_list = kwargs['batch_list']
+
+        headers = {'Authorization': 'Bearer ' + token, 'content-type': 'application/json'}
+
+        await self.queue_assignments(batch_list)
+
+        tasks = []
+
+
     def batch_assignment(self, assignment_list):
         try:
 
             token_response = AzureSDKAuthentication().authenticate()
             token = token_response["accessToken"]
             try:
-                self.loop.run_until_complete(self.main(token, assignment_list))
+                self.loop.run_until_complete(self.main_loop(token=token, batch_list=assignment_list))
 
             except RuntimeError:
+                #TODO
                 print("Oops!")
             # result = react(self.main, [token])
             self.loop.close()
+        except SystemExit:
+            print("Ending loop")
+
+    def batch_assignment_list(self, subscription_list):
+        try:
+            token_response = AzureSDKAuthentication().authenticate()
+            token = token_response["accessToken"]
+
+            try:
+                self.loop.run_until_complete(self.main(token, subscription_list))
+            except RuntimeError:
+                #TODO
+                print("Oops")
         except SystemExit:
             print("Ending loop")

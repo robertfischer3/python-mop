@@ -36,6 +36,7 @@ class PolicyStates:
         with request_authenticated_azure_session() as req:
             return req.post(api_endpoint).json
 
+    @retry(wait=wait_random(min=1, max=3), stop=stop_after_attempt(4))
     def policy_states_summarize_for_policy_definition(self, subscriptionId, policyDefinitionName):
         """
         Summarizes policy states for the subscription level policy definition.

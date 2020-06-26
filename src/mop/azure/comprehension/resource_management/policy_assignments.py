@@ -1,6 +1,7 @@
 import datetime
 import jmespath
 import json
+import asyncio
 
 from configparser import ConfigParser
 from dotenv import load_dotenv
@@ -51,16 +52,76 @@ class PolicyAssignments():
         headers = {'content-type': 'application/json'}
 
         with request_authenticated_azure_session() as req:
-            policy_assignment = req.put(api_endpoint,
-                                        data=json.dumps(policyAssignmentBody, indent=4, ensure_ascii=False),
-                                        headers=headers)
+            policy_assignment = req.put_create_assignment(api_endpoint,
+                                                          data=json.dumps(policyAssignmentBody, indent=4, ensure_ascii=False),
+                                                          headers=headers)
 
         return policy_assignment
 
+    def create_policy_assignment_at_subscription_level(self, managementGroupId,
+                                                                   subscriptionId,
+                                                                   policyDefinition,
+                                                                   data):
+
+        created = datetime.datetime.utcnow()
+
+        if policyDefinition["name"]:
+            id = policyDefinition["id"]
+            displayName = policyDefinition["name"]
+            description = policyDefinition["name"]
+            createdBy = ""
+            category = None
+            parameters = {}
+
+            if policyDefinition["properties"]:
+                if policyDefinition["properties"]["displayName"]:
+                    displayName = policyDefinition["properties"]["displayName"]
+                if 'description' in policyDefinition["properties"]:
+                    description = policyDefinition["properties"]["description"]
+                else:
+                    print("No decription, using policy name: {}".format(displayName))
+                if 'parameters' in policyDefinition["properties"]:
+                    parameter_dict = policyDefinition["properties"]['parameters']
+                    defaultValues = jmespath.search("*.defaultValue", data=parameter_dict)
+                    for key in parameter_dict.keys():
+                        if 'defaultValue' in parameter_dict[key]:
+                            value = parameter_dict[key]['defaultValue']
+                            parameters[key] = {"value": value}
+                    # if len(parameter_dict) > 0:
+                    #     if len(parameter_dict) != len(parameters):
+                    #         print("Policy assignment {} skipped".format(policyDefinitionName), len(parameter_dict),
+                    #               len(parameters))
+                    #         return None
+
+                if policyDefinition["properties"]["metadata"]:
+                    createdBy = policyDefinition["properties"]["metadata"]["createdBy"]
+                    if "metadata" in policyDefinition["properties"] and "category" in \
+                        policyDefinition["properties"]["metadata"]:
+                        category = policyDefinition["properties"]["metadata"]["category"]
+
+                policy_assignment_request_body = {
+                    "properties": {
+                        "displayName": displayName,
+                        "description": description,
+                        "metadata": {
+                            "assignedBy": createdBy
+                        },
+                        "policyDefinitionId": id,
+                        "parameters": parameters
+                    }
+                }
+                if category:
+                    policy_assignment_request_body["properties"]["metadata"]["category"] = category
+
+                policy_assignment_response = self.create_policy_assignment(subscriptionId=subscriptionId,
+                                                                           policyAssignmentName=
+                                                                           policyDefinition["name"],
+                                                                           policyAssignmentBody=policy_assignment_request_body)
+
+
+    @retry(wait=wait_random(min=1, max=2), stop=stop_after_attempt(2))
     def create_management_group_policy_assignment_at_subscription_level(self, managementGroupId, subscriptionId,
                                                                         policyDefinitionName):
-        policy_assignments = list()
-        rest_api_responses = list()
 
         created = datetime.datetime.utcnow()
 

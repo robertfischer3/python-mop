@@ -1,3 +1,5 @@
+from azure.mgmt.policyinsights.models import QueryFailureException
+
 from mop.azure.comprehension.resource_management.policy_definitions import (
     management_grp_policy_list_as_df,
 )
