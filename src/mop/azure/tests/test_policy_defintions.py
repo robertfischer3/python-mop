@@ -103,8 +103,7 @@ class TestPolicyDefinitionsCase(unittest.TestCase):
 
         aggregate_subscriptions = AggregateSubscriptions()
         subscriptions = aggregate_subscriptions.list_subscriptions()
-
-        subscriptions.reverse()
+        #subscriptions.reverse()
 
         for subscription in subscriptions:
             for policy_definition_file in policy_definition_files:

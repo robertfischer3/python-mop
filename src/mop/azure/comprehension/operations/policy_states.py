@@ -2,7 +2,7 @@ from configparser import ConfigParser
 from tenacity import retry, wait_random, stop_after_attempt
 from azure.mgmt.policyinsights.models import QueryFailureException
 from azure.mgmt.policyinsights.models import QueryOptions
-from azure.mgmt.policyinsights.policy_insights_client import PolicyInsightsClient
+from azure.mgmt.policyinsights._policy_insights_client import PolicyInsightsClient
 from dotenv import load_dotenv
 
 from mop.framework.azure_connections import request_authenticated_azure_session
@@ -36,6 +36,7 @@ class PolicyStates:
         with request_authenticated_azure_session() as req:
             return req.post(api_endpoint).json
 
+    @retry(wait=wait_random(min=1, max=3), stop=stop_after_attempt(4))
     def policy_states_summarize_for_policy_definition(self, subscriptionId, policyDefinitionName):
         """
         Summarizes policy states for the subscription level policy definition.

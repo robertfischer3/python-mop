@@ -78,7 +78,7 @@ class PolicySetDefinition:
         policy_set_properties_body = json.dumps(policy_set_properties_body)
 
         with request_authenticated_azure_session() as req:
-            policy_set_definition = req.put(api_endpoint, data=policy_set_properties_body, headers=headers)
+            policy_set_definition = req.put_create_assignment(api_endpoint, data=policy_set_properties_body, headers=headers)
 
         return policy_set_definition
 

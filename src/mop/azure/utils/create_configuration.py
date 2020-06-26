@@ -21,6 +21,7 @@ def change_dir(destination):
     finally:
         os.chdir(cwd)
 
+
 def create_baseline_configuration(generate_test=True):
     """
         The method creates the api configuration file for Azure API calls.  As Microsoft changes the API, the
@@ -42,12 +43,12 @@ def create_baseline_configuration(generate_test=True):
     """
     The configuration file supports multiple database instances
     """
-    config["SQLSERVER"] = {"instance01":{
-        'server':'tcp:172.17.0.1',
-        'database':'TestDB2',
+    config["SQLSERVER"] = {"instance01": {
+        'server': 'tcp:172.17.0.1',
+        'database': 'sqlmopbucket',
         'username': 'robert',
-        'db_driver':'{ODBC Driver 17 for SQL Server}',
-        'dialect':'mssql'
+        'db_driver': '{ODBC Driver 17 for SQL Server}',
+        'dialect': 'mssql'
     }
     }
 
@@ -117,6 +118,10 @@ def create_baseline_configuration(generate_test=True):
         'filter_policy_suggest': '{cloud_api}/filter/policy/suggest'
     }
 
+    config["COSMOSDB"] = {
+        'URI_01': os.environ["COSMODB_URI"]
+    }
+
     config["PLUGINS"] = {
         'plugin_python_policies': 'pypolicy/glbl_pr_sec*.py',
         'plugin_database': 'test_db_plugin'
@@ -140,8 +145,10 @@ def create_baseline_configuration(generate_test=True):
         with atomic_write(TESTVARIABLES, "w") as testconfigfile:
             config.write(testconfigfile)
 
+
 def main():
     create_baseline_configuration()
+
 
 if __name__ == "__main__":
     main()

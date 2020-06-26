@@ -75,7 +75,7 @@ setup(
         "security"
         # eg: 'keyword1', 'keyword2', 'keyword3',
     ],
-    python_requires=">=3.7.*",
+    python_requires=">=3.8.*",
     install_requires=[
         # eg: 'aspectlib==1.1.1', 'six>=1.7',
         "setuptools_scm>=3.3.1",
@@ -85,10 +85,7 @@ setup(
         "atomicwrites",
         "python-dotenv",
         "docutils",
-        "azure",
-        "pandas",
-        "pyodbc",
-        "sqlalchemy",
+
     ],
     extras_require={
         # eg:

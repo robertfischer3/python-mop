@@ -14,7 +14,7 @@ from mop.azure.utils.create_configuration import change_dir, OPERATIONSPATH, CON
 from mop.db.basedb import BaseDb
 
 
-class AggregateSubscriptions(BaseDb):
+class AggregateSQLSubscriptions(BaseDb):
 
     def __init__(self, db_server_instance="instance01"):
         load_dotenv()

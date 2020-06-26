@@ -2,7 +2,6 @@ from mop.framework.microsoft_graph_connections import request_authenticated_grap
 from mop.framework.mopbase import MopBase
 
 
-
 class DirectoryAudit(MopBase):
 
     def graph_directory_list_audits(self):

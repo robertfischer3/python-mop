@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 @contextmanager
 def request_authenticated_graph_session():
     """
-    Context manager for Azure API calls
+    Context manager for Graph API calls
     :return: requests.session
     """
     session = None
@@ -39,7 +39,7 @@ def request_authenticated_graph_session():
 
 class GraphAPIAuthentication:
     """
-    Azure SDK authentication token for REST API
+    Graph SDK authentication token for REST API
     """
 
     def __init__(
